@@ -16,26 +16,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['deny_user_id'])) {
 // Handle approval
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['approve_user_id'])) {
     $userId = $_POST['approve_user_id'];
-    $departments = $_POST['departments'] ?? [];
+    $departmentIds = $_POST['departments'] ?? [];
     $role = $_POST['role'] ?? 'member';
 
-    $body = [
+    // Approve user & set role
+    supabaseRequest("users?id=eq.$userId", 'PATCH', [
         'is_approved' => true,
-        'departments' => $departments,
         'role' => $role
-    ];
+    ]);
 
-    supabaseRequest("users?id=eq.$userId", 'PATCH', $body);
+    // Assign departments
+    foreach ($departmentIds as $deptId) {
+        supabaseRequest("user_departments", "POST", [[
+            'user_id' => $userId,
+            'department_id' => $deptId
+        ]]);
+    }
 }
 
-// Fetch pending + approved users
+// Fetch data
 [$pendingResponse] = supabaseRequest('users?is_approved=eq.false', 'GET');
 $pendingUsers = json_decode($pendingResponse, true);
 
 [$approvedResponse] = supabaseRequest('users?is_approved=eq.true', 'GET');
 $approvedUsers = json_decode($approvedResponse, true);
 
-$departments = ['SAHP', 'BCSO', 'LSPD', 'SACO', 'SAFR'];
+[$allDeptsResp] = supabaseRequest("departments", "GET");
+$allDepartments = json_decode($allDeptsResp, true) ?? [];
 ?>
 
 <!DOCTYPE html>
@@ -45,10 +52,7 @@ $departments = ['SAHP', 'BCSO', 'LSPD', 'SACO', 'SAFR'];
   <title>Manage Users - Admin</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
-    let currentUserId = '';
-
     function openModal(userId) {
-      currentUserId = userId;
       document.getElementById('approve_user_id').value = userId;
       document.getElementById('approvalModal').classList.remove('hidden');
     }
@@ -60,7 +64,6 @@ $departments = ['SAHP', 'BCSO', 'LSPD', 'SACO', 'SAFR'];
 </head>
 <body class="bg-gray-900 text-white min-h-screen flex">
   <?php include '../includes/adminsidebar.php'; ?>
-
   <div class="flex-1 flex flex-col">
     <?php include '../includes/header.php'; ?>
 
@@ -94,12 +97,12 @@ $departments = ['SAHP', 'BCSO', 'LSPD', 'SACO', 'SAFR'];
             <div>
               <p class="font-semibold"><?= htmlspecialchars($user['username']) ?> (<?= htmlspecialchars($user['role'] ?? 'member') ?>)</p>
               <p class="text-sm text-gray-400"><?= htmlspecialchars($user['email']) ?></p>
-<?php
-  $userId = $user['id'];
-  [$deptResp] = supabaseRequest("user_departments?user_id=eq.$userId&select=departments(name)", "GET");
-  $linked = array_map(fn($d) => $d['departments']['name'], json_decode($deptResp, true));
-?>
-<p class="text-xs text-gray-400">Departments: <?= implode(', ', $linked) ?></p>
+              <?php
+                $userId = $user['id'];
+                [$deptResp] = supabaseRequest("user_departments?user_id=eq.$userId&select=departments(name)", "GET");
+                $linked = array_map(fn($d) => $d['departments']['name'], json_decode($deptResp, true));
+              ?>
+              <p class="text-xs text-gray-400">Departments: <?= implode(', ', $linked) ?></p>
             </div>
             <a href="edit-user.php?id=<?= $user['id'] ?>" class="bg-yellow-500 hover:bg-yellow-600 px-4 py-2 rounded">Edit</a>
           </div>
@@ -120,10 +123,10 @@ $departments = ['SAHP', 'BCSO', 'LSPD', 'SACO', 'SAFR'];
 
         <label class="block mb-2">Departments</label>
         <div class="flex flex-wrap gap-2 mb-4">
-          <?php foreach ($departments as $dept): ?>
+          <?php foreach ($allDepartments as $dept): ?>
             <label class="flex items-center space-x-2">
-              <input type="checkbox" name="departments[]" value="<?= $dept ?>" class="accent-blue-500">
-              <span><?= $dept ?></span>
+              <input type="checkbox" name="departments[]" value="<?= $dept['id'] ?>" class="accent-blue-500">
+              <span><?= htmlspecialchars($dept['name']) ?></span>
             </label>
           <?php endforeach; ?>
         </div>
