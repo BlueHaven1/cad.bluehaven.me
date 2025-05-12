@@ -94,7 +94,12 @@ $departments = ['SAHP', 'BCSO', 'LSPD', 'SACO', 'SAFR'];
             <div>
               <p class="font-semibold"><?= htmlspecialchars($user['username']) ?> (<?= htmlspecialchars($user['role'] ?? 'member') ?>)</p>
               <p class="text-sm text-gray-400"><?= htmlspecialchars($user['email']) ?></p>
-              <p class="text-xs text-gray-400">Departments: <?= implode(', ', $user['departments'] ?? []) ?></p>
+<?php
+  $userId = $user['id'];
+  [$deptResp] = supabaseRequest("user_departments?user_id=eq.$userId&select=departments(name)", "GET");
+  $linked = array_map(fn($d) => $d['departments']['name'], json_decode($deptResp, true));
+?>
+<p class="text-xs text-gray-400">Departments: <?= implode(', ', $linked) ?></p>
             </div>
             <a href="edit-user.php?id=<?= $user['id'] ?>" class="bg-yellow-500 hover:bg-yellow-600 px-4 py-2 rounded">Edit</a>
           </div>

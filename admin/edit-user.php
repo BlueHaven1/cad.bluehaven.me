@@ -14,35 +14,48 @@ if (!$userId) {
     exit;
 }
 
-[$userResponse, $userStatus] = supabaseRequest("users?id=eq.$userId", 'GET');
-$user = ($userStatus === 200 && count(json_decode($userResponse, true)) > 0) ? json_decode($userResponse, true)[0] : null;
+// Fetch user
+[$userResp] = supabaseRequest("users?id=eq.$userId", 'GET');
+$user = json_decode($userResp, true)[0] ?? null;
 
-if (!$user) {
-    echo "User not found.";
-    exit;
-}
+// Fetch all departments
+[$deptResp] = supabaseRequest("departments", "GET");
+$allDepartments = json_decode($deptResp, true) ?? [];
 
-$allDepartments = ['SAHP', 'BCSO', 'LSPD', 'SACO', 'SAFR'];
+// Fetch assigned department IDs for this user
+[$udResp] = supabaseRequest("user_departments?user_id=eq.$userId", "GET");
+$assigned = array_column(json_decode($udResp, true), 'department_id');
 
+// Form submit
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $username = trim($_POST['username']);
     $email = trim($_POST['email']);
     $role = $_POST['role'];
-    $departments = $_POST['departments'] ?? [];
     $newPassword = trim($_POST['new_password'] ?? '');
+    $selectedDepartments = $_POST['departments'] ?? [];
 
+    // Update user
     $updateData = [
         'username' => $username,
         'email' => $email,
-        'role' => $role,
-        'departments' => $departments
+        'role' => $role
     ];
-
     if (!empty($newPassword)) {
         $updateData['password'] = password_hash($newPassword, PASSWORD_DEFAULT);
     }
-
     supabaseRequest("users?id=eq.$userId", 'PATCH', $updateData);
+
+    // Clear old links
+    supabaseRequest("user_departments?user_id=eq.$userId", "DELETE");
+
+    // Re-insert selected departments
+    foreach ($selectedDepartments as $deptId) {
+        supabaseRequest("user_departments", "POST", [[
+            'user_id' => $userId,
+            'department_id' => $deptId
+        ]]);
+    }
+
     header("Location: users.php");
     exit;
 }
@@ -57,7 +70,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </head>
 <body class="bg-gray-900 text-white min-h-screen flex">
   <?php include '../includes/adminsidebar.php'; ?>
-
   <div class="flex-1 flex flex-col">
     <?php include '../includes/header.php'; ?>
 
@@ -75,10 +87,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           <div class="flex flex-wrap gap-3 mb-4">
             <?php foreach ($allDepartments as $dept): ?>
               <label class="flex items-center space-x-2">
-                <input type="checkbox" name="departments[]" value="<?= $dept ?>"
-                  <?= in_array($dept, $user['departments'] ?? []) ? 'checked' : '' ?>
-                  class="accent-blue-500">
-                <span><?= $dept ?></span>
+                <input type="checkbox" name="departments[]" value="<?= $dept['id'] ?>" <?= in_array($dept['id'], $assigned) ? 'checked' : '' ?> class="accent-blue-500">
+                <span><?= htmlspecialchars($dept['name']) ?></span>
               </label>
             <?php endforeach; ?>
           </div>
