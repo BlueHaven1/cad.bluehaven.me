@@ -50,8 +50,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <title>Edit User - Admin</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-900 text-white min-h-screen p-6">
-  <?php include '../includes/header.php'; ?>
+<body class="bg-gray-900 text-white min-h-screen flex">
+  <?php include '../includes/adminsidebar.php'; ?>
+
+  <div class="flex-1 flex flex-col">
+    <?php include '../includes/header.php'; ?>
 
   <div class="max-w-xl mx-auto bg-gray-800 p-6 rounded-xl mt-10">
     <h1 class="text-2xl font-bold mb-4">Edit User</h1>
