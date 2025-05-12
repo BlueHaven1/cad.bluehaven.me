@@ -95,10 +95,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
           <label class="block mb-2">Role</label>
           <select name="role" class="w-full bg-gray-700 text-white px-4 py-2 rounded mb-4">
-            <option value="member" <?= $user['role'] === 'member' ? 'selected' : '' ?>>Member</option>
-            <option value="admin" <?= $user['role'] === 'admin' ? 'selected' : '' ?>>Admin</option>
-            <option value="superadmin" <?= $user['role'] === 'superadmin' ? 'selected' : '' ?>>Superadmin</option>
-          </select>
+  <option value="member" <?= $user['role'] === 'member' ? 'selected' : '' ?>>Member</option>
+  <option value="admin" <?= $user['role'] === 'admin' ? 'selected' : '' ?>>Admin</option>
+  <?php if ($_SESSION['role'] === 'superadmin'): ?>
+    <option value="superadmin" <?= $user['role'] === 'superadmin' ? 'selected' : '' ?>>Superadmin</option>
+  <?php endif; ?>
+</select>
 
           <label class="block mb-2">New Password <span class="text-gray-400 text-sm">(leave blank to keep current)</span></label>
           <input type="password" name="new_password" class="w-full bg-gray-700 text-white px-4 py-2 rounded mb-6">
