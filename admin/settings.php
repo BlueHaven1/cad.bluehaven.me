@@ -3,10 +3,11 @@
 session_start();
 require_once '../includes/supabase.php';
 
-if (!isset($_SESSION['user_id']) || !in_array($_SESSION['role'], ['admin', 'superadmin'])) {
+if (!isset($_SESSION['user_id']) || ($_SESSION['role'] ?? '') !== 'superadmin') {
     header("Location: ../login.php");
     exit;
 }
+
 
 // Handle updates
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['departments'])) {
