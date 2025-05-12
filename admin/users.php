@@ -57,8 +57,8 @@ $users = $status === 200 ? json_decode($response, true) : [];
 </head>
 <body class="bg-gray-900 text-white min-h-screen flex">
   <?php include '../includes/adminsidebar.php'; ?>
-  
-<body class="bg-gray-900 text-white min-h-screen p-6">
+
+<div class="flex-1 ml-0 md:ml-64">
   <?php include '../includes/header.php'; ?>
 
   <h1 class="text-2xl font-bold mb-6 mt-6">Pending User Approvals</h1>
