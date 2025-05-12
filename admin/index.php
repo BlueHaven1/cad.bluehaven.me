@@ -37,9 +37,9 @@ foreach ($users as $user) {
   <title>Admin Dashboard</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-900 text-white min-h-screen">
-  <?php include '../includes/header.php'; ?>
+<body class="bg-gray-900 text-white min-h-screen flex">
   <?php include '../includes/adminsidebar.php'; ?>
+  <?php include '../includes/header.php'; ?>
 
   <div class="p-6">
     <h1 class="text-3xl font-bold mb-4">Welcome, <?= htmlspecialchars($username) ?> (<?= htmlspecialchars($role) ?>)</h1>
