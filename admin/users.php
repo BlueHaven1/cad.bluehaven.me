@@ -61,10 +61,10 @@ $departments = ['SAHP', 'BCSO', 'LSPD', 'SACO', 'SAFR'];
 <body class="bg-gray-900 text-white min-h-screen flex">
   <?php include '../includes/adminsidebar.php'; ?>
 
-  <div class="flex-1 ml-0 md:ml-64">
+  <div class="flex-1 flex flex-col">
     <?php include '../includes/header.php'; ?>
 
-    <div class="p-6">
+    <div class="flex-1 p-6 flex flex-col items-center">
       <h1 class="text-2xl font-bold mb-6">Pending User Approvals</h1>
       <div class="space-y-4">
         <?php foreach ($pendingUsers as $user): ?>
