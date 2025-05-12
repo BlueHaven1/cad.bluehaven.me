@@ -39,6 +39,7 @@ foreach ($users as $user) {
 </head>
 <body class="bg-gray-900 text-white min-h-screen">
   <?php include '../includes/header.php'; ?>
+  <?php include '../includes/adminsidebar.php'; ?>
 
   <div class="p-6">
     <h1 class="text-3xl font-bold mb-4">Welcome, <?= htmlspecialchars($username) ?> (<?= htmlspecialchars($role) ?>)</h1>
