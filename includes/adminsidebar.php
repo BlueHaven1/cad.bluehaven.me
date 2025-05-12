@@ -1,5 +1,6 @@
 <?php
 // includes/adminsidebar.php
+$role = $_SESSION['role'] ?? 'guest';
 ?>
 
 <aside class="bg-gray-800 text-white w-full md:w-64 min-h-screen p-4 fixed md:relative top-0 left-0">
@@ -11,8 +12,11 @@
     <a href="/admin/users.php" class="block px-3 py-2 rounded hover:bg-gray-700 <?= basename($_SERVER['PHP_SELF']) === 'users.php' ? 'bg-gray-700' : '' ?>">
       Users
     </a>
-    <a href="/admin/settings.php" class="block px-3 py-2 rounded hover:bg-gray-700 <?= basename($_SERVER['PHP_SELF']) === 'settings.php' ? 'bg-gray-700' : '' ?>">
-      Settings
-    </a>
+
+    <?php if ($role === 'superadmin'): ?>
+      <a href="/admin/settings.php" class="block px-3 py-2 rounded hover:bg-gray-700 <?= basename($_SERVER['PHP_SELF']) === 'settings.php' ? 'bg-gray-700' : '' ?>">
+        Settings
+      </a>
+    <?php endif; ?>
   </nav>
 </aside>
