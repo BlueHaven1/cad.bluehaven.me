@@ -39,6 +39,8 @@ foreach ($users as $user) {
 </head>
 <body class="bg-gray-900 text-white min-h-screen flex">
   <?php include '../includes/adminsidebar.php'; ?>
+
+ <div class="flex-1 ml-0 md:ml-64"> 
   <?php include '../includes/header.php'; ?>
 
   <div class="p-6">
