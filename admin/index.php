@@ -40,10 +40,10 @@ foreach ($users as $user) {
 <body class="bg-gray-900 text-white min-h-screen flex">
   <?php include '../includes/adminsidebar.php'; ?>
 
-  <div class="flex-1 ml-0 md:ml-64">
+  <div class="flex-1 flex flex-col">
     <?php include '../includes/header.php'; ?>
 
-    <div class="p-6">
+    <div class="flex-1 p-6 flex flex-col items-center">
       <h1 class="text-3xl font-bold mb-4">Welcome, <?= htmlspecialchars($username) ?> (<?= htmlspecialchars($role) ?>)</h1>
 
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
