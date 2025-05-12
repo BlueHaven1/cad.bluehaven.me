@@ -132,11 +132,13 @@ $allDepartments = json_decode($allDeptsResp, true) ?? [];
         </div>
 
         <label class="block mb-2">Role</label>
-        <select name="role" required class="w-full bg-gray-700 text-white px-4 py-2 rounded mb-6">
-          <option value="member">Member</option>
-          <option value="admin">Admin</option>
-          <option value="superadmin">Superadmin</option>
-        </select>
+<select name="role" required class="w-full bg-gray-700 text-white px-4 py-2 rounded mb-6">
+  <option value="member">Member</option>
+  <option value="admin">Admin</option>
+  <?php if ($_SESSION['role'] === 'superadmin'): ?>
+    <option value="superadmin">Superadmin</option>
+  <?php endif; ?>
+</select>
 
         <div class="flex justify-between">
           <button type="button" onclick="closeModal()" class="bg-gray-600 hover:bg-gray-700 px-4 py-2 rounded">Cancel</button>
