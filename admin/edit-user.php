@@ -29,6 +29,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = trim($_POST['email']);
     $role = $_POST['role'];
     $departments = $_POST['departments'] ?? [];
+    $newPassword = trim($_POST['new_password'] ?? '');
 
     $updateData = [
         'username' => $username,
@@ -36,6 +37,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'role' => $role,
         'departments' => $departments
     ];
+
+    if (!empty($newPassword)) {
+        $updateData['password'] = password_hash($newPassword, PASSWORD_DEFAULT);
+    }
 
     supabaseRequest("users?id=eq.$userId", 'PATCH', $updateData);
     header("Location: users.php");
@@ -56,39 +61,45 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <div class="flex-1 flex flex-col">
     <?php include '../includes/header.php'; ?>
 
-  <div class="max-w-xl mx-auto bg-gray-800 p-6 rounded-xl mt-10">
-    <h1 class="text-2xl font-bold mb-4">Edit User</h1>
-    <form method="POST">
-      <label class="block mb-2">Username</label>
-      <input type="text" name="username" value="<?= htmlspecialchars($user['username']) ?>" class="w-full bg-gray-700 text-white px-4 py-2 rounded mb-4">
+    <div class="p-6 flex flex-col items-center">
+      <div class="w-full max-w-xl bg-gray-800 p-6 rounded-xl">
+        <h1 class="text-2xl font-bold mb-4">Edit User</h1>
+        <form method="POST">
+          <label class="block mb-2">Username</label>
+          <input type="text" name="username" value="<?= htmlspecialchars($user['username']) ?>" class="w-full bg-gray-700 text-white px-4 py-2 rounded mb-4">
 
-      <label class="block mb-2">Email</label>
-      <input type="email" name="email" value="<?= htmlspecialchars($user['email']) ?>" class="w-full bg-gray-700 text-white px-4 py-2 rounded mb-4">
+          <label class="block mb-2">Email</label>
+          <input type="email" name="email" value="<?= htmlspecialchars($user['email']) ?>" class="w-full bg-gray-700 text-white px-4 py-2 rounded mb-4">
 
-      <label class="block mb-2">Departments</label>
-      <div class="flex flex-wrap gap-3 mb-4">
-        <?php foreach ($allDepartments as $dept): ?>
-          <label class="flex items-center space-x-2">
-            <input type="checkbox" name="departments[]" value="<?= $dept ?>"
-              <?= in_array($dept, $user['departments'] ?? []) ? 'checked' : '' ?>
-              class="accent-blue-500">
-            <span><?= $dept ?></span>
-          </label>
-        <?php endforeach; ?>
+          <label class="block mb-2">Departments</label>
+          <div class="flex flex-wrap gap-3 mb-4">
+            <?php foreach ($allDepartments as $dept): ?>
+              <label class="flex items-center space-x-2">
+                <input type="checkbox" name="departments[]" value="<?= $dept ?>"
+                  <?= in_array($dept, $user['departments'] ?? []) ? 'checked' : '' ?>
+                  class="accent-blue-500">
+                <span><?= $dept ?></span>
+              </label>
+            <?php endforeach; ?>
+          </div>
+
+          <label class="block mb-2">Role</label>
+          <select name="role" class="w-full bg-gray-700 text-white px-4 py-2 rounded mb-4">
+            <option value="member" <?= $user['role'] === 'member' ? 'selected' : '' ?>>Member</option>
+            <option value="admin" <?= $user['role'] === 'admin' ? 'selected' : '' ?>>Admin</option>
+            <option value="superadmin" <?= $user['role'] === 'superadmin' ? 'selected' : '' ?>>Superadmin</option>
+          </select>
+
+          <label class="block mb-2">New Password <span class="text-gray-400 text-sm">(leave blank to keep current)</span></label>
+          <input type="password" name="new_password" class="w-full bg-gray-700 text-white px-4 py-2 rounded mb-6">
+
+          <div class="flex justify-between">
+            <a href="users.php" class="bg-gray-600 hover:bg-gray-700 px-4 py-2 rounded">Cancel</a>
+            <button type="submit" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded">Save Changes</button>
+          </div>
+        </form>
       </div>
-
-      <label class="block mb-2">Role</label>
-      <select name="role" class="w-full bg-gray-700 text-white px-4 py-2 rounded mb-6">
-        <option value="member" <?= $user['role'] === 'member' ? 'selected' : '' ?>>Member</option>
-        <option value="admin" <?= $user['role'] === 'admin' ? 'selected' : '' ?>>Admin</option>
-        <option value="superadmin" <?= $user['role'] === 'superadmin' ? 'selected' : '' ?>>Superadmin</option>
-      </select>
-
-      <div class="flex justify-between">
-        <a href="users.php" class="bg-gray-600 hover:bg-gray-700 px-4 py-2 rounded">Cancel</a>
-        <button type="submit" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded">Save Changes</button>
-      </div>
-    </form>
+    </div>
   </div>
 </body>
 </html>
