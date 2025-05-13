@@ -99,7 +99,7 @@ $callsign = $_SESSION['callsign'] ?? 'None';
 
     <!-- Optional: Future Features Section -->
     <div class="mt-12 text-center text-gray-500 text-sm">
-      More MDT tools and real-time features will appear here as they're added.
+      Add more MDT tools. Noted
     </div>
   </div>
 </main>
