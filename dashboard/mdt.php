@@ -73,15 +73,23 @@ $callsign = $_SESSION['callsign'] ?? 'None';
           <p class="text-sm text-gray-400 uppercase mb-1">Status</p>
           <div class="flex flex-col sm:flex-row sm:items-center justify-between">
             <p id="currentStatus" class="text-xl font-semibold text-green-400 mb-4 sm:mb-0"><?= htmlspecialchars($status) ?></p>
-            <div class="flex flex-wrap gap-2">
-              <?php if ($status === '10-7'): ?>
-                <button onclick="updateStatus('10-8')" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded text-sm">Go 10-8</button>
-              <?php else: ?>
-                <?php foreach (['10-6', '10-15', '10-23', '10-97', '10-7'] as $opt): ?>
-                  <button onclick="updateStatus('<?= $opt ?>')" class="bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded text-sm"><?= $opt ?></button>
-                <?php endforeach; ?>
-              <?php endif; ?>
-            </div>
+<div class="flex flex-wrap gap-2 mt-2">
+  <?php if ($status === '10-7'): ?>
+    <button onclick="updateStatus('10-8')" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded text-sm">Go 10-8</button>
+  <?php else: ?>
+    <?php
+      $options = ['10-6', '10-15', '10-23', '10-97', '10-7'];
+      foreach ($options as $opt):
+        $isActive = $status === $opt;
+        $classes = $isActive
+          ? 'bg-green-600 text-white ring-2 ring-green-400'
+          : 'bg-gray-700 hover:bg-gray-600 text-white';
+    ?>
+      <button onclick="updateStatus('<?= $opt ?>')" class="<?= $classes ?> px-4 py-2 rounded text-sm"><?= $opt ?></button>
+    <?php endforeach; ?>
+  <?php endif; ?>
+</div>
+
           </div>
         </div>
       </div>
