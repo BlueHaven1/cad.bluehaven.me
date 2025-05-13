@@ -57,7 +57,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       'notes' => $notes,
       'signature' => $signature
     ];
-    [$resp, $code] = supabaseRequest("warnings", "POST", [$body]);
+    [$resp, $code] = supabaseRequest("written-warnings", "POST", [$body]);
 
     $success = $code === 201;
     if (!$success) $error = 'Failed to submit written warning.';
