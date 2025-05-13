@@ -18,17 +18,16 @@ $error = '';
 
 // Fetch penal code titles and sections
 [$titlesResp] = supabaseRequest("penal_titles", "GET");
-$penal_titles = json_decode($titlesResp, true);
+$penal_titles = json_decode($titlesResp, true) ?? [];
 
 [$sectionsResp] = supabaseRequest("penal_sections", "GET");
-$penal_sections = json_decode($sectionsResp, true);
+$penal_sections = json_decode($sectionsResp, true) ?? [];
 
-$sections_by_title = [];
-foreach ($sections as $s) {
-    $sections_by_title[$s['title_id']][] = $s;
+$grouped_sections = [];
+foreach ($penal_sections as $section) {
+    $grouped_sections[$section['title_id']][] = $section;
 }
 
-// Handle citation submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   $civilian_id = $_POST['civilian_id'] ?? null;
   $violation = trim($_POST['violation']);
@@ -61,6 +60,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <meta charset="UTF-8">
   <title>Create Citation - MDT</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    async function searchCivilians(query) {
+      if (query.length < 2) return;
+      const response = await fetch('../includes/search-civilians.php?name=' + encodeURIComponent(query));
+      const results = await response.json();
+      const list = document.getElementById('results');
+      list.innerHTML = '';
+      results.forEach(civ => {
+        const item = document.createElement('div');
+        item.className = 'px-3 py-2 hover:bg-gray-700 cursor-pointer';
+        item.textContent = `${civ.name} (${civ.dob})`;
+        item.onclick = () => {
+          document.getElementById('civilian_id').value = civ.id;
+          document.getElementById('civilian_display').value = civ.name + ' (' + civ.dob + ')';
+          list.innerHTML = '';
+        };
+        list.appendChild(item);
+      });
+    }
+  </script>
 </head>
 <body class="bg-gray-900 text-white flex min-h-screen">
 
@@ -105,15 +124,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       </div>
 
       <div>
-        <label class="block mb-1 font-semibold">Violation</label>
-        <select name="violation" required class="w-full px-4 py-2 bg-gray-800 rounded text-white">
+        <label class="block mb-1 font-semibold">Violation (from Penal Code)</label>
+        <select name="violation" required class="w-full px-4 py-2 rounded bg-gray-800 text-white">
           <option value="">Select a penal code violation</option>
           <?php foreach ($penal_titles as $title): ?>
-            <?php if (!empty($sections_by_title[$title['id']])): ?>
+            <?php if (!empty($grouped_sections[$title['id']])): ?>
               <optgroup label="<?= htmlspecialchars($title['name']) ?>">
-                <?php foreach ($sections_by_title[$title['id']] as $sec): ?>
-                  <option value="§ <?= htmlspecialchars($sec['code']) ?> - <?= htmlspecialchars($sec['description']) ?>">
-                    § <?= htmlspecialchars($sec['code']) ?> - <?= htmlspecialchars($sec['description']) ?>
+                <?php foreach ($grouped_sections[$title['id']] as $section): ?>
+                  <option value="<?= htmlspecialchars($section['code'] . ' - ' . $section['description']) ?>">
+                    <?= htmlspecialchars($section['code'] . ' - ' . $section['description']) ?>
                   </option>
                 <?php endforeach; ?>
               </optgroup>
@@ -141,28 +160,5 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </form>
   </div>
 </main>
-
-<script>
-  async function searchCivilians(query) {
-    if (query.length < 2) return;
-
-    const response = await fetch('../includes/search-civilians.php?name=' + encodeURIComponent(query));
-    const results = await response.json();
-    const list = document.getElementById('results');
-    list.innerHTML = '';
-
-    results.forEach(civ => {
-      const item = document.createElement('div');
-      item.className = 'px-3 py-2 hover:bg-gray-700 cursor-pointer';
-      item.textContent = `${civ.name} (${civ.dob})`;
-      item.onclick = () => {
-        document.getElementById('civilian_id').value = civ.id;
-        document.getElementById('civilian_display').value = civ.name + ' (' + civ.dob + ')';
-        list.innerHTML = '';
-      };
-      list.appendChild(item);
-    });
-  }
-</script>
 </body>
 </html>
