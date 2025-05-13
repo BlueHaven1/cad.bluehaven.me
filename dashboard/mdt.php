@@ -45,47 +45,55 @@ $callsign = $_SESSION['callsign'] ?? 'None';
   </aside>
 
   <!-- Main Content -->
-  <main class="ml-64 p-6 w-full">
-    <h1 class="text-3xl font-bold mb-6">MDT Dashboard</h1>
+<main class="ml-64 p-8 w-full bg-gray-900 min-h-screen">
+  <div class="max-w-7xl mx-auto">
+    <h1 class="text-4xl font-bold mb-8">MDT Dashboard</h1>
 
-    <div class="bg-gray-800 rounded-xl p-6 shadow w-full max-w-3xl">
-      <h2 class="text-xl font-semibold mb-4">Unit Information</h2>
+    <!-- Unit Info Card -->
+    <div class="bg-gray-800 rounded-2xl p-8 shadow-xl border border-gray-700">
+      <h2 class="text-2xl font-semibold mb-6 text-white">Officer Unit Information</h2>
 
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-300">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 text-gray-300">
         <div>
-          <p class="text-sm text-gray-400">Username</p>
-          <p class="text-lg font-semibold text-white"><?= htmlspecialchars($username) ?></p>
+          <p class="text-sm text-gray-400 uppercase mb-1">Username</p>
+          <p class="text-xl font-semibold"><?= htmlspecialchars($username) ?></p>
         </div>
 
         <div>
-          <p class="text-sm text-gray-400">Department</p>
-          <p class="text-lg font-semibold text-white"><?= htmlspecialchars($department) ?></p>
+          <p class="text-sm text-gray-400 uppercase mb-1">Department</p>
+          <p class="text-xl font-semibold"><?= htmlspecialchars($department) ?></p>
         </div>
 
         <div>
-          <p class="text-sm text-gray-400">Callsign</p>
-          <p class="text-lg font-semibold text-white"><?= htmlspecialchars($callsign) ?></p>
+          <p class="text-sm text-gray-400 uppercase mb-1">Callsign</p>
+          <p class="text-xl font-semibold"><?= htmlspecialchars($callsign) ?></p>
         </div>
 
-        <div>
-          <p class="text-sm text-gray-400">Status</p>
-          <p id="currentStatus" class="text-lg font-semibold text-green-400 mb-2"><?= htmlspecialchars($status) ?></p>
-
-          <div class="flex flex-wrap gap-2 mt-2">
-            <?php if ($status === '10-7'): ?>
-              <button onclick="updateStatus('10-8')" class="bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded">Go 10-8</button>
-            <?php else: ?>
-              <?php
-              $options = ['10-6', '10-15', '10-23', '10-97', '10-7'];
-              foreach ($options as $opt): ?>
-                <button onclick="updateStatus('<?= $opt ?>')" class="bg-gray-700 hover:bg-gray-600 px-3 py-1 rounded"><?= $opt ?></button>
-              <?php endforeach; ?>
-            <?php endif; ?>
+        <div class="col-span-1 sm:col-span-2 lg:col-span-3">
+          <p class="text-sm text-gray-400 uppercase mb-1">Status</p>
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between">
+            <p id="currentStatus" class="text-xl font-semibold text-green-400 mb-4 sm:mb-0"><?= htmlspecialchars($status) ?></p>
+            <div class="flex flex-wrap gap-2">
+              <?php if ($status === '10-7'): ?>
+                <button onclick="updateStatus('10-8')" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded text-sm">Go 10-8</button>
+              <?php else: ?>
+                <?php foreach (['10-6', '10-15', '10-23', '10-97', '10-7'] as $opt): ?>
+                  <button onclick="updateStatus('<?= $opt ?>')" class="bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded text-sm"><?= $opt ?></button>
+                <?php endforeach; ?>
+              <?php endif; ?>
+            </div>
           </div>
         </div>
       </div>
     </div>
-  </main>
+
+    <!-- Optional: Future Features Section -->
+    <div class="mt-12 text-center text-gray-500 text-sm">
+      More MDT tools and real-time features will appear here as they're added.
+    </div>
+  </div>
+</main>
+
 
   <!-- AJAX Script -->
   <script>
