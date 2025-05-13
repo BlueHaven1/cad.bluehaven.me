@@ -55,14 +55,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// Fetch data
-[$titlesResp] = supabaseRequest("penal_titles", "GET");
-$penal_titles = json_decode($titlesResp, true);
+// Fetch data safely
+[$titlesResp, $titlesCode] = supabaseRequest("penal_titles", "GET");
+$penal_titles = $titlesCode === 200 ? json_decode($titlesResp, true) : [];
+
 $title_ids = array_map(fn($t) => $t['id'], $penal_titles);
 $title_ids_query = implode(",", array_map(fn($id) => "'$id'", $title_ids));
-[$sectionsResp] = supabaseRequest("penal_sections?title_id=in.($title_ids_query)", "GET");
-$penal_sections = json_decode($sectionsResp, true);
+
+[$sectionsResp, $sectionsCode] = supabaseRequest("penal_sections?title_id=in.($title_ids_query)", "GET");
+$penal_sections = $sectionsCode === 200 ? json_decode($sectionsResp, true) : [];
+
 $sections_by_title = [];
+foreach ($penal_sections as $s) {
+    $sections_by_title[$s['title_id']][] = $s;
+}
 foreach ($penal_sections as $s) {
     $sections_by_title[$s['title_id']][] = $s;
 }
