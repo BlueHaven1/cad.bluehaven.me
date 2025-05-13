@@ -133,19 +133,19 @@ if (!empty($title_ids_query)) {
         <ul class="space-y-4">
           <?php foreach ($sections_by_title[$title['id']] as $sec): ?>
             <li class="bg-gray-700 p-4 rounded">
-              <form method="POST" class="space-y-2">
-                <input type="hidden" name="section_id" value="<?= $sec['id'] ?>">
-                <input type="text" name="code" value="<?= htmlspecialchars($sec['code']) ?>" class="w-full bg-gray-800 px-3 py-2 rounded">
-                <textarea name="description" class="w-full bg-gray-800 px-3 py-2 rounded"><?= htmlspecialchars($sec['description']) ?></textarea>
-                <div class="flex gap-4">
-                  <input type="number" name="fine" value="<?= $sec['fine'] ?>" placeholder="Fine" class="bg-gray-800 px-3 py-2 rounded w-1/2">
-                  <input type="number" name="jail_time" value="<?= $sec['jail_time'] ?>" placeholder="Jail Time" class="bg-gray-800 px-3 py-2 rounded w-1/2">
-                </div>
-                <div class="flex gap-2 mt-2">
-                  <button type="submit" name="update_section" class="bg-yellow-500 hover:bg-yellow-600 px-4 py-1 rounded">Update</button>
-                  <button type="submit" name="delete_section" onclick="return confirm('Delete this section?')" class="bg-red-600 hover:bg-red-700 px-4 py-1 rounded">Delete</button>
-                </div>
-              </form>
+<form method="POST" class="grid grid-cols-12 gap-2 items-center">
+  <input type="hidden" name="section_id" value="<?= $sec['id'] ?>">
+
+  <input type="text" name="code" value="<?= htmlspecialchars($sec['code']) ?>" class="col-span-2 bg-gray-800 px-3 py-2 rounded text-sm">
+  <input type="text" name="description" value="<?= htmlspecialchars($sec['description']) ?>" class="col-span-4 bg-gray-800 px-3 py-2 rounded text-sm">
+  <input type="number" name="fine" value="<?= $sec['fine'] ?>" placeholder="Fine" class="col-span-2 bg-gray-800 px-3 py-2 rounded text-sm">
+  <input type="number" name="jail_time" value="<?= $sec['jail_time'] ?>" placeholder="Jail Time" class="col-span-2 bg-gray-800 px-3 py-2 rounded text-sm">
+
+  <div class="col-span-2 flex gap-2">
+    <button type="submit" name="update_section" class="bg-yellow-500 hover:bg-yellow-600 px-3 py-1 rounded text-sm">Update</button>
+    <button type="submit" name="delete_section" onclick="return confirm('Delete this section?')" class="bg-red-600 hover:bg-red-700 px-3 py-1 rounded text-sm">Delete</button>
+  </div>
+</form>
             </li>
           <?php endforeach; ?>
         </ul>
