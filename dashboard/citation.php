@@ -16,6 +16,19 @@ $officerId = $_SESSION['user_id'];
 $success = false;
 $error = '';
 
+// Fetch penal code titles and sections
+[$titlesResp] = supabaseRequest("penal_titles", "GET");
+$penal_titles = json_decode($titlesResp, true);
+
+[$sectionsResp] = supabaseRequest("penal_sections", "GET");
+$penal_sections = json_decode($sectionsResp, true);
+
+$sections_by_title = [];
+foreach ($sections as $s) {
+    $sections_by_title[$s['title_id']][] = $s;
+}
+
+// Handle citation submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   $civilian_id = $_POST['civilian_id'] ?? null;
   $violation = trim($_POST['violation']);
@@ -34,11 +47,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     ];
     [$resp, $code] = supabaseRequest("citations", "POST", [$body]);
 
-    if ($code === 201) {
-      $success = true;
-    } else {
-      $error = 'Failed to create citation.';
-    }
+    $success = $code === 201;
+    if (!$success) $error = 'Failed to create citation.';
   } else {
     $error = 'Civilian, violation, and signature are required.';
   }
@@ -96,7 +106,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
       <div>
         <label class="block mb-1 font-semibold">Violation</label>
-        <textarea name="violation" class="w-full px-4 py-2 bg-gray-800 rounded" required></textarea>
+        <select name="violation" required class="w-full px-4 py-2 bg-gray-800 rounded text-white">
+          <option value="">Select a penal code violation</option>
+          <?php foreach ($penal_titles as $title): ?>
+            <?php if (!empty($sections_by_title[$title['id']])): ?>
+              <optgroup label="<?= htmlspecialchars($title['name']) ?>">
+                <?php foreach ($sections_by_title[$title['id']] as $sec): ?>
+                  <option value="§ <?= htmlspecialchars($sec['code']) ?> - <?= htmlspecialchars($sec['description']) ?>">
+                    § <?= htmlspecialchars($sec['code']) ?> - <?= htmlspecialchars($sec['description']) ?>
+                  </option>
+                <?php endforeach; ?>
+              </optgroup>
+            <?php endif; ?>
+          <?php endforeach; ?>
+        </select>
       </div>
 
       <div>
