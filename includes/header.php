@@ -10,12 +10,15 @@ $role = $_SESSION['role'] ?? 'guest';
     <img src="/assets/uploads/logo.png" alt="Logo" class="h-10 w-10 rounded-full">
     <span class="text-xl font-semibold">San Andreas Roleplay</span>
 
-    <?php if ($isLoggedIn): ?>
-      <a href="/dashboard.php" class="hover:underline text-sm">Dashboard</a>
-      <?php if (in_array($role, ['admin', 'superadmin'])): ?>
-        <a href="/admin/index.php" class="hover:underline text-sm">Admin Panel</a>
-      <?php endif; ?>
-    <?php endif; ?>
+<?php if ($isLoggedIn): ?>
+  <a href="/dashboard.php" class="hover:underline text-sm">Dashboard</a>
+  <a href="/patrol.php" class="hover:underline text-sm">Patrol</a>
+  <?php if (in_array($role, ['admin', 'superadmin'])): ?>
+    <a href="/admin/index.php" class="hover:underline text-sm">Admin Panel</a>
+  <?php endif; ?>
+<?php endif; ?>
+
+    
   </div>
 
   <?php if ($isLoggedIn): ?>

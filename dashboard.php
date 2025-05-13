@@ -30,5 +30,10 @@ $role = $_SESSION['role'] ?? 'member';
       (<?= htmlspecialchars(ucfirst($role)) ?>)
     </p>
   </div>
+  <div class="mt-6">
+  <a href="/patrol.php" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded shadow">
+    Start Patrol
+  </a>
+</div>
 </body>
 </html>
