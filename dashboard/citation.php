@@ -21,14 +21,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   $violation = trim($_POST['violation']);
   $location = trim($_POST['location']);
   $notes = trim($_POST['notes']);
+  $signature = $_POST['signature'] ?? null;
 
-  if ($civilian_id && $violation) {
+  if ($civilian_id && $violation && $signature) {
     $body = [
       'civilian_id' => $civilian_id,
       'officer_id' => $officerId,
       'violation' => $violation,
       'location' => $location,
-      'notes' => $notes
+      'notes' => $notes,
+      'signature' => $signature
     ];
     [$resp, $code] = supabaseRequest("citations", "POST", [$body]);
 
@@ -38,7 +40,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       $error = 'Failed to create citation.';
     }
   } else {
-    $error = 'Civilian and violation are required.';
+    $error = 'Civilian, violation, and signature are required.';
   }
 }
 ?>
@@ -49,28 +51,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <meta charset="UTF-8">
   <title>Create Citation - MDT</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    async function searchCivilians(query) {
-      if (query.length < 2) return;
-
-      const response = await fetch('../includes/search-civilians.php?name=' + encodeURIComponent(query));
-      const results = await response.json();
-      const list = document.getElementById('results');
-      list.innerHTML = '';
-
-      results.forEach(civ => {
-        const item = document.createElement('div');
-        item.className = 'px-3 py-2 hover:bg-gray-700 cursor-pointer';
-        item.textContent = `${civ.name} (${civ.dob})`;
-        item.onclick = () => {
-          document.getElementById('civilian_id').value = civ.id;
-          document.getElementById('civilian_display').value = civ.name + ' (' + civ.dob + ')';
-          list.innerHTML = '';
-        };
-        list.appendChild(item);
-      });
-    }
-  </script>
 </head>
 <body class="bg-gray-900 text-white flex min-h-screen">
 
@@ -106,7 +86,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       <p class="text-red-500 mb-4"><?= htmlspecialchars($error) ?></p>
     <?php endif; ?>
 
-    <form method="POST" class="space-y-6">
+    <form method="POST" class="space-y-6" onsubmit="return captureSignature()">
       <div>
         <label class="block mb-1 font-semibold">Search Civilian</label>
         <input type="text" id="civilian_display" oninput="searchCivilians(this.value)" placeholder="Type to search..." class="w-full px-4 py-2 bg-gray-800 rounded" autocomplete="off">
@@ -129,9 +109,70 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <textarea name="notes" class="w-full px-4 py-2 bg-gray-800 rounded"></textarea>
       </div>
 
+      <div>
+        <label class="block mb-1 font-semibold">Signature</label>
+        <canvas id="signature-pad" class="bg-white rounded w-full h-32 mb-2"></canvas>
+        <button type="button" onclick="clearSignature()" class="text-sm text-red-400 hover:underline mb-4">Clear Signature</button>
+        <input type="hidden" name="signature" id="signature">
+      </div>
+
       <button type="submit" class="bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded font-semibold">Submit Citation</button>
     </form>
   </div>
 </main>
+
+<!-- Scripts -->
+<script>
+  async function searchCivilians(query) {
+    if (query.length < 2) return;
+
+    const response = await fetch('../includes/search-civilians.php?name=' + encodeURIComponent(query));
+    const results = await response.json();
+    const list = document.getElementById('results');
+    list.innerHTML = '';
+
+    results.forEach(civ => {
+      const item = document.createElement('div');
+      item.className = 'px-3 py-2 hover:bg-gray-700 cursor-pointer';
+      item.textContent = `${civ.name} (${civ.dob})`;
+      item.onclick = () => {
+        document.getElementById('civilian_id').value = civ.id;
+        document.getElementById('civilian_display').value = civ.name + ' (' + civ.dob + ')';
+        list.innerHTML = '';
+      };
+      list.appendChild(item);
+    });
+  }
+
+  // Signature logic
+  const canvas = document.getElementById('signature-pad');
+  const ctx = canvas.getContext('2d');
+  let drawing = false;
+
+  canvas.addEventListener('mousedown', e => {
+    drawing = true;
+    ctx.beginPath();
+    ctx.moveTo(e.offsetX, e.offsetY);
+  });
+
+  canvas.addEventListener('mousemove', e => {
+    if (!drawing) return;
+    ctx.lineTo(e.offsetX, e.offsetY);
+    ctx.stroke();
+  });
+
+  canvas.addEventListener('mouseup', () => drawing = false);
+  canvas.addEventListener('mouseleave', () => drawing = false);
+
+  function clearSignature() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+  }
+
+  function captureSignature() {
+    const dataURL = canvas.toDataURL('image/png');
+    document.getElementById('signature').value = dataURL;
+    return true;
+  }
+</script>
 </body>
 </html>
