@@ -7,7 +7,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'superadmin') {
     exit;
 }
 
-// Handle create, update, delete for titles
+// Handle title & section creation/editing/deletion
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['create_title'])) {
         $title_name = trim($_POST['title_name']);
@@ -59,15 +59,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 [$titlesResp, $titlesCode] = supabaseRequest("penal_titles", "GET");
 $penal_titles = $titlesCode === 200 ? json_decode($titlesResp, true) : [];
 
-// Get title_ids for section fetch
 $title_ids = array_column($penal_titles, 'id');
-$title_ids_query = implode(",", array_map(fn($id) => "'$id'", $title_ids));
+$title_ids_query = implode(",", array_map('urlencode', $title_ids));
 
 // Fetch sections
 $sections_by_title = [];
 if (!empty($title_ids_query)) {
     [$sectionsResp, $sectionsCode] = supabaseRequest("penal_sections?title_id=in.($title_ids_query)", "GET");
     $penal_sections = $sectionsCode === 200 ? json_decode($sectionsResp, true) : [];
+    if (!is_array($penal_sections)) $penal_sections = [];
 
     foreach ($penal_sections as $s) {
         $tid = $s['title_id'];
@@ -75,7 +75,6 @@ if (!empty($title_ids_query)) {
         $sections_by_title[$tid][] = $s;
     }
 }
-
 ?>
 
 <!DOCTYPE html>
@@ -90,6 +89,7 @@ if (!empty($title_ids_query)) {
 <div class="flex-1 p-8">
   <h1 class="text-3xl font-bold mb-8">Penal Code Management</h1>
 
+  <!-- Create Title -->
   <div class="bg-gray-800 p-6 rounded-xl mb-10">
     <h2 class="text-xl font-semibold mb-4">Create Penal Title</h2>
     <form method="POST" class="space-y-4">
@@ -99,6 +99,7 @@ if (!empty($title_ids_query)) {
     </form>
   </div>
 
+  <!-- Create Section -->
   <div class="bg-gray-800 p-6 rounded-xl mb-10">
     <h2 class="text-xl font-semibold mb-4">Create Penal Section</h2>
     <form method="POST" class="space-y-4">
@@ -116,6 +117,7 @@ if (!empty($title_ids_query)) {
     </form>
   </div>
 
+  <!-- Titles and Sections -->
   <?php foreach ($penal_titles as $title): ?>
     <div class="bg-gray-800 rounded-xl p-6 mb-6">
       <form method="POST" class="flex justify-between items-center mb-4">
