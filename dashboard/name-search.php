@@ -6,6 +6,11 @@ if (!isset($_SESSION['user_id']) || !isset($_SESSION['mdt_active'])) {
     header("Location: ../patrol.php");
     exit;
 }
+
+$status = $_SESSION['status'] ?? '10-7';
+$username = $_SESSION['username'] ?? 'Unknown';
+$department = $_SESSION['department'] ?? 'N/A';
+$callsign = $_SESSION['callsign'] ?? 'None';
 ?>
 
 <!DOCTYPE html>
@@ -18,23 +23,35 @@ if (!isset($_SESSION['user_id']) || !isset($_SESSION['mdt_active'])) {
 <body class="bg-gray-900 text-white flex min-h-screen">
 
 <!-- Sidebar -->
-<?php include 'mdt-sidebar.php'; ?>
+<aside class="w-64 bg-gray-800 p-4 flex flex-col justify-between fixed h-full">
+  <div>
+    <h2 class="text-2xl font-bold mb-6">MDT</h2>
+    <nav class="space-y-2">
+      <a href="mdt.php" class="block px-3 py-2 rounded hover:bg-gray-700">Dashboard</a>
+      <a href="name-search.php" class="block px-3 py-2 rounded bg-gray-700">Name Search</a>
+      <a href="plate-search.php" class="block px-3 py-2 rounded hover:bg-gray-700">Plate Search</a>
+      <a href="citation.php" class="block px-3 py-2 rounded hover:bg-gray-700">Citation</a>
+      <a href="warning.php" class="block px-3 py-2 rounded hover:bg-gray-700">Written Warning</a>
+      <a href="arrest.php" class="block px-3 py-2 rounded hover:bg-gray-700">Arrest Report</a>
+      <a href="file-warrant.php" class="block px-3 py-2 rounded hover:bg-gray-700">File Warrant</a>
+      <a href="serve-warrant.php" class="block px-3 py-2 rounded hover:bg-gray-700">Serve Warrant</a>
+      <a href="penal-code.php" class="block px-3 py-2 rounded hover:bg-gray-700">Penal Code</a>
+      <a href="10-codes.php" class="block px-3 py-2 rounded hover:bg-gray-700">10-Codes</a>
+    </nav>
+  </div>
+  <a href="exit-mdt.php" class="block px-3 py-2 mt-6 rounded bg-red-600 hover:bg-red-700 text-center font-semibold">
+    Exit MDT
+  </a>
+</aside>
 
-<main class="ml-64 p-8 w-full bg-gray-900">
-  <div class="max-w-4xl mx-auto">
-    <h1 class="text-3xl font-bold mb-6">Name Search</h1>
+<!-- Main -->
+<main class="ml-64 p-8 w-full bg-gray-900 min-h-screen">
+  <div class="max-w-5xl mx-auto">
+    <h1 class="text-4xl font-bold mb-8">Name Search</h1>
 
     <form method="GET" class="flex gap-4 mb-6">
-      <input
-        type="text"
-        name="name"
-        placeholder="Enter full or partial name"
-        class="flex-1 px-4 py-2 rounded bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-        value="<?= htmlspecialchars($_GET['name'] ?? '') ?>"
-      >
-      <button type="submit" class="bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded font-semibold">
-        Search
-      </button>
+      <input type="text" name="name" placeholder="Enter name" class="flex-1 px-4 py-2 rounded bg-gray-800 text-white" value="<?= htmlspecialchars($_GET['name'] ?? '') ?>">
+      <button type="submit" class="bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded font-semibold">Search</button>
     </form>
 
     <?php
@@ -55,7 +72,7 @@ if (!isset($_SESSION['user_id']) || !isset($_SESSION['mdt_active'])) {
         }
         echo '</div>';
       } else {
-        echo '<p class="text-gray-400">No results found.</p>';
+        echo '<p class="text-gray-400">No civilians found.</p>';
       }
     }
     ?>

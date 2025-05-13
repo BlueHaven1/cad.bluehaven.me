@@ -7,6 +7,11 @@ if (!isset($_SESSION['user_id']) || !isset($_SESSION['mdt_active'])) {
     exit;
 }
 
+$status = $_SESSION['status'] ?? '10-7';
+$username = $_SESSION['username'] ?? 'Unknown';
+$department = $_SESSION['department'] ?? 'N/A';
+$callsign = $_SESSION['callsign'] ?? 'None';
+
 $civId = $_GET['id'] ?? null;
 
 if (!$civId) {
