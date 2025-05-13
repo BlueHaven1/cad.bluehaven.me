@@ -1,7 +1,7 @@
 <?php
 session_start();
-if (!isset($_SESSION['user_id'])) {
-    header("Location: ../login.php");
+if (!isset($_SESSION['user_id']) || !isset($_SESSION['mdt_active'])) {
+    header("Location: ../patrol.php");
     exit;
 }
 ?>
@@ -29,6 +29,9 @@ if (!isset($_SESSION['user_id'])) {
       <a href="serve-warrant.php" class="block px-3 py-2 rounded hover:bg-gray-700">Serve Warrant</a>
       <a href="penal-code.php" class="block px-3 py-2 rounded hover:bg-gray-700">Penal Code</a>
       <a href="10-codes.php" class="block px-3 py-2 rounded hover:bg-gray-700">10-Codes</a>
+      <a href="exit-mdt.php" class="block px-3 py-2 mt-6 rounded bg-red-600 hover:bg-red-700 text-center font-semibold">
+  Exit MDT
+</a>
     </nav>
   </aside>
 

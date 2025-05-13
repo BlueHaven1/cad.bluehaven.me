@@ -28,6 +28,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $_SESSION['callsign'] = $callsign;
         $_SESSION['department'] = $selectedDept['name']; // for display
         $_SESSION['department_id'] = $selectedDept['id']; // for querying
+        $_SESSION['status'] = '10-7';
+        $_SESSION['mdt_active'] = true;
 
         // Redirect based on department name
         switch (strtolower($selectedDept['name'])) {
