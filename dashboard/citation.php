@@ -25,7 +25,7 @@ $penal_sections = json_decode($sectionsResp, true) ?? [];
 
 $grouped_sections = [];
 foreach ($penal_sections as $section) {
-    $grouped_sections[$section['title_id']][] = $section;
+  $grouped_sections[$section['title_id']][] = $section;
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -34,6 +34,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   $location = trim($_POST['location']);
   $notes = trim($_POST['notes']);
   $signature = $_POST['signature'] ?? null;
+  $fine = isset($_POST['fine']) ? (int) $_POST['fine'] : null;
 
   if ($civilian_id && $violation && $signature) {
     $body = [
@@ -42,7 +43,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       'violation' => $violation,
       'location' => $location,
       'notes' => $notes,
-      'signature' => $signature
+      'signature' => $signature,
+      'fine' => $fine
     ];
     [$resp, $code] = supabaseRequest("citations", "POST", [$body]);
 
@@ -60,26 +62,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <meta charset="UTF-8">
   <title>Create Citation - MDT</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    async function searchCivilians(query) {
-      if (query.length < 2) return;
-      const response = await fetch('../includes/search-civilians.php?name=' + encodeURIComponent(query));
-      const results = await response.json();
-      const list = document.getElementById('results');
-      list.innerHTML = '';
-      results.forEach(civ => {
-        const item = document.createElement('div');
-        item.className = 'px-3 py-2 hover:bg-gray-700 cursor-pointer';
-        item.textContent = `${civ.name} (${civ.dob})`;
-        item.onclick = () => {
-          document.getElementById('civilian_id').value = civ.id;
-          document.getElementById('civilian_display').value = civ.name + ' (' + civ.dob + ')';
-          list.innerHTML = '';
-        };
-        list.appendChild(item);
-      });
-    }
-  </script>
 </head>
 <body class="bg-gray-900 text-white flex min-h-screen">
 
@@ -125,13 +107,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
       <div>
         <label class="block mb-1 font-semibold">Violation (from Penal Code)</label>
-        <select name="violation" required class="w-full px-4 py-2 rounded bg-gray-800 text-white">
+        <select name="violation" id="violationDropdown" required class="w-full px-4 py-2 rounded bg-gray-800 text-white" onchange="updateFine()">
           <option value="">Select a penal code violation</option>
           <?php foreach ($penal_titles as $title): ?>
             <?php if (!empty($grouped_sections[$title['id']])): ?>
               <optgroup label="<?= htmlspecialchars($title['name']) ?>">
                 <?php foreach ($grouped_sections[$title['id']] as $section): ?>
-                  <option value="<?= htmlspecialchars($section['code'] . ' - ' . $section['description']) ?>">
+                  <option 
+                    value="<?= htmlspecialchars($section['code'] . ' - ' . $section['description']) ?>"
+                    data-fine="<?= (int)$section['fine'] ?>"
+                  >
                     <?= htmlspecialchars($section['code'] . ' - ' . $section['description']) ?>
                   </option>
                 <?php endforeach; ?>
@@ -139,6 +124,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <?php endif; ?>
           <?php endforeach; ?>
         </select>
+      </div>
+
+      <div>
+        <label class="block mb-1 font-semibold">Fine Amount ($)</label>
+        <input type="number" name="fine" id="fineInput" readonly class="w-full px-4 py-2 bg-gray-800 rounded">
       </div>
 
       <div>
@@ -160,5 +150,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </form>
   </div>
 </main>
+
+<script>
+  function updateFine() {
+    const dropdown = document.getElementById('violationDropdown');
+    const selectedOption = dropdown.options[dropdown.selectedIndex];
+    const fine = selectedOption.getAttribute('data-fine');
+    document.getElementById('fineInput').value = fine || '';
+  }
+
+  async function searchCivilians(query) {
+    if (query.length < 2) return;
+
+    const response = await fetch('../includes/search-civilians.php?name=' + encodeURIComponent(query));
+    const results = await response.json();
+    const list = document.getElementById('results');
+    list.innerHTML = '';
+
+    results.forEach(civ => {
+      const item = document.createElement('div');
+      item.className = 'px-3 py-2 hover:bg-gray-700 cursor-pointer';
+      item.textContent = `${civ.name} (${civ.dob})`;
+      item.onclick = () => {
+        document.getElementById('civilian_id').value = civ.id;
+        document.getElementById('civilian_display').value = civ.name + ' (' + civ.dob + ')';
+        list.innerHTML = '';
+      };
+      list.appendChild(item);
+    });
+  }
+</script>
+
 </body>
 </html>
