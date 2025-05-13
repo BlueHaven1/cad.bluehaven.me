@@ -132,12 +132,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       </div>
 
       <div>
-        <label class="block mb-1 font-semibold">Fine (Auto-filled)</label>
+        <label class="block mb-1 font-semibold">Fine ($)</label>
         <input type="number" name="fine" id="fineInput" class="w-full px-4 py-2 bg-gray-800 rounded" readonly>
       </div>
 
       <div>
-        <label class="block mb-1 font-semibold">Jail Time (Auto-filled)</label>
+        <label class="block mb-1 font-semibold">Jail Time (Seconds)</label>
         <input type="number" name="jail_time" id="jailTimeInput" class="w-full px-4 py-2 bg-gray-800 rounded" readonly>
       </div>
 
