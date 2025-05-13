@@ -72,24 +72,31 @@ if (!empty($_GET['plate'])) {
     </form>
 
     <?php if (!empty($searchPlate)): ?>
-      <?php if (!empty($results)): ?>
-        <div class="space-y-4">
-          <?php foreach ($results as $v): ?>
-            <div class="bg-gray-800 p-4 rounded-lg border border-gray-700">
-              <h2 class="text-xl font-semibold"><?= htmlspecialchars($v['make'] . ' ' . $v['model']) ?></h2>
-              <p class="text-sm text-gray-400">Plate: <?= htmlspecialchars($v['plate']) ?> | Color: <?= htmlspecialchars($v['color']) ?></p>
+<?php foreach ($results as $v): ?>
+  <div class="bg-gray-800 p-4 rounded-lg border border-gray-700">
+    <h2 class="text-xl font-semibold"><?= htmlspecialchars($v['make'] . ' ' . $v['model']) ?></h2>
+    <p class="text-sm text-gray-400">
+      Plate: <?= htmlspecialchars($v['plate']) ?> |
+      Color: <?= htmlspecialchars($v['color']) ?>
+      <?= !empty($v['is_stolen']) ? '<span class="text-red-500 ml-2">🚨 Stolen</span>' : '' ?>
+    </p>
 
-              <?php
-                $civId = $v['civilian_id'];
-                [$civResp] = supabaseRequest("civilians?id=eq.$civId", "GET");
-                $civ = json_decode($civResp, true)[0] ?? null;
-              ?>
-              <?php if ($civ): ?>
-                <p class="text-sm text-gray-400">Registered Owner: <?= htmlspecialchars($civ['name']) ?> (<?= htmlspecialchars($civ['dob']) ?>)</p>
-                <p class="text-sm text-gray-400">Phone: <?= htmlspecialchars($civ['phone']) ?></p>
-              <?php endif; ?>
-            </div>
-          <?php endforeach; ?>
+    <?php
+      $civId = $v['civilian_id'];
+      [$civResp] = supabaseRequest("civilians?id=eq.$civId", "GET");
+      $civ = json_decode($civResp, true)[0] ?? null;
+    ?>
+    <?php if ($civ): ?>
+      <p class="text-sm text-gray-400">
+        Registered Owner:
+        <a href="civilian.php?id=<?= $civ['id'] ?>" class="text-blue-400 hover:underline">
+          <?= htmlspecialchars($civ['name']) ?>
+        </a> (<?= htmlspecialchars($civ['dob']) ?>)
+      </p>
+      <p class="text-sm text-gray-400">Phone: <?= htmlspecialchars($civ['phone']) ?></p>
+    <?php endif; ?>
+  </div>
+<?php endforeach; ?>
         </div>
       <?php else: ?>
         <p class="text-gray-400">No matching plates found.</p>
