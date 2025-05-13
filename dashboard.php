@@ -31,7 +31,7 @@ $role = $_SESSION['role'] ?? 'member';
     </p>
   </div>
   <div class="mt-6">
-  <a href="/patrol.php" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded shadow">
+  <a href="/patrol.php" class="items-center bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded shadow">
     Start Patrol
   </a>
 </div>
