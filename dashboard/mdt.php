@@ -75,11 +75,13 @@ $callsign = $_SESSION['callsign'] ?? 'None';
             <p id="currentStatus" class="text-xl font-semibold text-green-400 mb-4 sm:mb-0"><?= htmlspecialchars($status) ?></p>
 <div class="flex flex-wrap gap-2 mt-2">
   <?php if ($status === '10-7'): ?>
-    <button onclick="updateStatus('10-8')" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded text-sm">Go 10-8</button>
+    <button onclick="updateStatus('10-8')" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded text-sm">
+      Go 10-8
+    </button>
   <?php else: ?>
     <?php
-      $options = ['10-6', '10-15', '10-23', '10-97', '10-7'];
-      foreach ($options as $opt):
+      $allStatuses = ['10-8', '10-6', '10-15', '10-23', '10-97', '10-7'];
+      foreach ($allStatuses as $opt):
         $isActive = $status === $opt;
         $classes = $isActive
           ? 'bg-green-600 text-white ring-2 ring-green-400'
