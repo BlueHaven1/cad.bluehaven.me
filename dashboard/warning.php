@@ -16,24 +16,24 @@ $officerId = $_SESSION['user_id'];
 $success = false;
 $error = '';
 
-// Fetch penal titles and sections
+// Fetch penal titles
 [$titlesResp, $titlesCode] = supabaseRequest("penal_titles", "GET");
 $penalTitles = $titlesCode === 200 ? json_decode($titlesResp, true) : [];
 
-$titleIds = array_column($penalTitles, 'id');
-$titleIdsQuery = implode(",", array_map(fn($id) => "'$id'", $titleIds));
-
 $sectionsByTitle = [];
-if (!empty($titleIds)) {
-  [$sectionsResp, $sectionsCode] = supabaseRequest("penal_sections?title_id=in.($titleIdsQuery)", "GET");
-  $penalSections = $sectionsCode === 200 ? json_decode($sectionsResp, true) : [];
 
-  foreach ($penalSections as $s) {
-    $tid = $s['title_id'];
-    if (!isset($sectionsByTitle[$tid])) $sectionsByTitle[$tid] = [];
-    $sectionsByTitle[$tid][] = $s;
-  }
+if (!empty($penalTitles)) {
+    foreach ($penalTitles as $title) {
+        $titleId = $title['id'];
+
+        // Fetch sections for each title individually
+        [$sectionsResp, $sectionsCode] = supabaseRequest("penal_sections?title_id=eq.$titleId", "GET");
+        $sections = $sectionsCode === 200 ? json_decode($sectionsResp, true) : [];
+
+        $sectionsByTitle[$titleId] = $sections;
+    }
 }
+
 
 // Form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
