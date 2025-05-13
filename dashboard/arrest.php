@@ -17,14 +17,20 @@ $success = false;
 $error = '';
 
 // Fetch penal codes
-[$titlesResp, $code1] = supabaseRequest("penal_titles", "GET");
-$penal_titles = json_decode($titlesResp, true);
+[$titlesResp] = supabaseRequest("penal_titles", "GET");
+$penal_titles = json_decode($titlesResp, true) ?? [];
 
-[$sectionsResp, $code2] = supabaseRequest("penal_sections", "GET");
-$penal_sections = json_decode($sectionsResp, true);
+[$sectionsResp] = supabaseRequest("penal_sections", "GET");
+$penal_sections = json_decode($sectionsResp, true) ?? [];
+
 $sections_by_title = [];
+$section_data_map = []; // For JS mapping
 foreach ($penal_sections as $s) {
     $sections_by_title[$s['title_id']][] = $s;
+    $section_data_map[$s['code'] . ' - ' . $s['description']] = [
+        'fine' => $s['fine'] ?? '',
+        'jail_time' => $s['jail_time'] ?? ''
+    ];
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -34,6 +40,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   $notes = trim($_POST['notes']);
   $signature = $_POST['signature'] ?? null;
   $arrest_date = $_POST['arrest_date'] ?? date('Y-m-d');
+  $fine = is_numeric($_POST['fine']) ? (int)$_POST['fine'] : null;
+  $jail_time = is_numeric($_POST['jail_time']) ? (int)$_POST['jail_time'] : null;
 
   if ($civilian_id && $violation && $signature) {
     $body = [
@@ -43,15 +51,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       'location' => $location,
       'notes' => $notes,
       'signature' => $signature,
-      'arrest_date' => $arrest_date
+      'arrest_date' => $arrest_date,
+      'fine' => $fine,
+      'jail_time' => $jail_time
     ];
     [$resp, $code] = supabaseRequest("arrest_reports", "POST", [$body]);
 
-    if ($code === 201) {
-      $success = true;
-    } else {
-      $error = 'Failed to submit arrest report.';
-    }
+    $success = $code === 201;
+    if (!$success) $error = 'Failed to submit arrest report.';
   } else {
     $error = 'Civilian, violation, and signature are required.';
   }
@@ -109,20 +116,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
       <div>
         <label class="block mb-1 font-semibold">Violation</label>
-        <select name="violation" required class="w-full px-4 py-2 rounded bg-gray-800">
+        <select name="violation" id="violationSelect" required class="w-full px-4 py-2 rounded bg-gray-800 text-white">
           <option value="">Select a Penal Code Violation</option>
           <?php foreach ($penal_titles as $t): ?>
             <?php if (!empty($sections_by_title[$t['id']])): ?>
               <optgroup label="<?= htmlspecialchars($t['name']) ?>">
                 <?php foreach ($sections_by_title[$t['id']] as $sec): ?>
-                  <option value="<?= htmlspecialchars($sec['code']) ?> - <?= htmlspecialchars($sec['description']) ?>">
-                    <?= htmlspecialchars($sec['code']) ?> - <?= htmlspecialchars($sec['description']) ?>
-                  </option>
+                  <?php $v = htmlspecialchars($sec['code'] . ' - ' . $sec['description']); ?>
+                  <option value="<?= $v ?>"><?= $v ?></option>
                 <?php endforeach; ?>
               </optgroup>
             <?php endif; ?>
           <?php endforeach; ?>
         </select>
+      </div>
+
+      <div>
+        <label class="block mb-1 font-semibold">Fine (Auto-filled)</label>
+        <input type="number" name="fine" id="fineInput" class="w-full px-4 py-2 bg-gray-800 rounded" readonly>
+      </div>
+
+      <div>
+        <label class="block mb-1 font-semibold">Jail Time (Auto-filled)</label>
+        <input type="number" name="jail_time" id="jailTimeInput" class="w-full px-4 py-2 bg-gray-800 rounded" readonly>
       </div>
 
       <div>
@@ -151,11 +167,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </main>
 
 <script>
+  const violationMap = <?= json_encode($section_data_map) ?>;
+
+  document.getElementById('violationSelect').addEventListener('change', function () {
+    const selected = this.value;
+    const fine = violationMap[selected]?.fine || '';
+    const jail = violationMap[selected]?.jail_time || '';
+    document.getElementById('fineInput').value = fine;
+    document.getElementById('jailTimeInput').value = jail;
+  });
+
   async function searchCivilians(query) {
     if (query.length < 2) return;
-
-    const response = await fetch('../includes/search-civilians.php?name=' + encodeURIComponent(query));
-    const results = await response.json();
+    const res = await fetch('../includes/search-civilians.php?name=' + encodeURIComponent(query));
+    const results = await res.json();
     const list = document.getElementById('results');
     list.innerHTML = '';
 
