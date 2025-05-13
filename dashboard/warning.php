@@ -18,21 +18,26 @@ $error = '';
 
 // Fetch penal titles
 [$titlesResp, $titlesCode] = supabaseRequest("penal_titles", "GET");
-$penalTitles = $titlesCode === 200 ? json_decode($titlesResp, true) : [];
+$penalTitlesRaw = $titlesCode === 200 ? json_decode($titlesResp, true) : [];
 
+$penalTitles = [];
 $sectionsByTitle = [];
 
-if (!empty($penalTitles)) {
-    foreach ($penalTitles as $title) {
+if (!empty($penalTitlesRaw)) {
+    foreach ($penalTitlesRaw as $title) {
         $titleId = $title['id'];
 
-        // Fetch sections for each title individually
+        // Fetch sections under this title
         [$sectionsResp, $sectionsCode] = supabaseRequest("penal_sections?title_id=eq.$titleId", "GET");
         $sections = $sectionsCode === 200 ? json_decode($sectionsResp, true) : [];
 
-        $sectionsByTitle[$titleId] = $sections;
+        if (!empty($sections)) {
+            $penalTitles[] = $title; // Only add titles that have at least one section
+            $sectionsByTitle[$titleId] = $sections;
+        }
     }
 }
+
 
 
 // Form submission
