@@ -16,14 +16,13 @@ $officerId = $_SESSION['user_id'];
 $success = false;
 $error = '';
 
-// Fetch penal titles
+// Fetch penal titles and sections
 [$titlesResp, $titlesCode] = supabaseRequest("penal_titles", "GET");
 $penalTitles = $titlesCode === 200 ? json_decode($titlesResp, true) : [];
 
 $titleIds = array_column($penalTitles, 'id');
 $titleIdsQuery = implode(",", array_map(fn($id) => "'$id'", $titleIds));
 
-// Fetch penal sections
 $sectionsByTitle = [];
 if (!empty($titleIds)) {
   [$sectionsResp, $sectionsCode] = supabaseRequest("penal_sections?title_id=in.($titleIdsQuery)", "GET");
@@ -36,10 +35,10 @@ if (!empty($titleIds)) {
   }
 }
 
-
+// Form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   $civilian_id = $_POST['civilian_id'] ?? null;
-  $violation = trim($_POST['violation']);
+  $violation = $_POST['violation'] ?? '';
   $location = trim($_POST['location']);
   $notes = trim($_POST['notes']);
   $signature = $_POST['signature'] ?? null;
@@ -56,7 +55,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     [$resp, $code] = supabaseRequest("warnings", "POST", [$body]);
 
     $success = $code === 201;
-    if (!$success) $error = 'Failed to submit warning.';
+    if (!$success) $error = 'Failed to submit written warning.';
   } else {
     $error = 'Civilian, violation, and signature are required.';
   }
@@ -67,7 +66,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Written Warning - MDT</title>
+  <title>Create Written Warning - MDT</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-900 text-white flex min-h-screen">
@@ -94,12 +93,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   </a>
 </aside>
 
+<!-- Main Content -->
 <main class="ml-64 p-8 w-full bg-gray-900 min-h-screen">
   <div class="max-w-3xl mx-auto">
-    <h1 class="text-4xl font-bold mb-6">Issue Written Warning</h1>
+    <h1 class="text-4xl font-bold mb-6">Create Written Warning</h1>
 
     <?php if ($success): ?>
-      <p class="text-green-500 mb-4">Warning issued successfully!</p>
+      <p class="text-green-500 mb-4">Written warning submitted successfully!</p>
     <?php elseif (!empty($error)): ?>
       <p class="text-red-500 mb-4"><?= htmlspecialchars($error) ?></p>
     <?php endif; ?>
@@ -113,16 +113,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       </div>
 
       <div>
-        <label class="block mb-1 font-semibold">Violation (Penal Code)</label>
+        <label class="block mb-1 font-semibold">Violation</label>
         <select name="violation" required class="w-full px-4 py-2 bg-gray-800 rounded">
           <option value="">Select a penal code violation</option>
           <?php foreach ($penalTitles as $title): ?>
             <optgroup label="<?= htmlspecialchars($title['name']) ?>">
-              <?php foreach ($sectionsByTitle[$title['id']] ?? [] as $sec): ?>
-                <option value="<?= htmlspecialchars($sec['code'] . ' - ' . $sec['description']) ?>">
-                  <?= htmlspecialchars($sec['code'] . ' - ' . $sec['description']) ?>
-                </option>
-              <?php endforeach; ?>
+              <?php if (!empty($sectionsByTitle[$title['id']])): ?>
+                <?php foreach ($sectionsByTitle[$title['id']] as $section): ?>
+                  <option value="<?= htmlspecialchars($section['code'] . ' - ' . $section['description']) ?>">
+                    <?= htmlspecialchars($section['code']) ?> - <?= htmlspecialchars($section['description']) ?>
+                  </option>
+                <?php endforeach; ?>
+              <?php endif; ?>
             </optgroup>
           <?php endforeach; ?>
         </select>
@@ -151,7 +153,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <script>
   async function searchCivilians(query) {
     if (query.length < 2) return;
-
     const response = await fetch('../includes/search-civilians.php?name=' + encodeURIComponent(query));
     const results = await response.json();
     const list = document.getElementById('results');
@@ -170,6 +171,5 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     });
   }
 </script>
-
 </body>
 </html>
