@@ -23,7 +23,7 @@ $role = $_SESSION['role'] ?? 'member';
   <?php include 'includes/header.php'; ?>
 
   <div class="flex flex-col items-center justify-center mt-20 text-center px-4">
-    <img src="/assets/uploads/logo.png" alt="Logo" class="w-32 h-32 rounded-full mb-6">
+    <img src="/assets/uploads/logo.png" alt="Logo" class="w-64 h-64 rounded-full mb-6">
     <h1 class="text-3xl font-bold mb-2">San Andreas Roleplay</h1>
     <p class="text-lg text-gray-300">
       Welcome, <span class="text-blue-400 font-semibold"><?= htmlspecialchars($username) ?></span> 
