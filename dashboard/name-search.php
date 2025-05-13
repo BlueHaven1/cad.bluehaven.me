@@ -56,8 +56,9 @@ $callsign = $_SESSION['callsign'] ?? 'None';
 
     <?php
     if (!empty($_GET['name'])) {
-      $name = trim($_GET['name']);
-      [$response, $status] = supabaseRequest("civilians?name=ilike.*$name*", "GET");
+$name = trim($_GET['name']);
+$encodedName = urlencode($name); // encode spaces and special chars
+[$response, $status] = supabaseRequest("civilians?name=ilike.*$encodedName*", "GET");
       $results = json_decode($response, true);
 
       if ($status === 200 && !empty($results)) {
