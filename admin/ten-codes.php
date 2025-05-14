@@ -68,6 +68,12 @@ $content = $data[0]['content'] ?? '';
   }
 </style>
 </head>
+<body class="bg-gray-900 text-white min-h-screen flex">
+<?php include '../includes/adminsidebar.php'; ?>
+
+  <div class="flex-1 flex flex-col">
+    <?php include '../includes/header.php'; ?>
+    
 <body class="bg-gray-900 text-white p-6 min-h-screen">
   <div class="max-w-4xl mx-auto">
     <h1 class="text-3xl font-bold mb-4">Edit 10-Codes (Public MDT)</h1>
