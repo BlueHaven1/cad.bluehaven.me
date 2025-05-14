@@ -45,7 +45,7 @@ $weapons = json_decode($weapRes, true);
 $citations = json_decode($citationsRes, true);
 
 // Get Written Warnings
-[$warningsRes] = supabaseRequest("warnings?civilian_id=eq.$civId", "GET");
+[$warningsRes] = supabaseRequest("written_warnings?civilian_id=eq.$civId", "GET");
 $warnings = json_decode($warningsRes, true);
 
 // Get Arrest Reports
