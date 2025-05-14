@@ -197,7 +197,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     });
   }
 </script>
-<?php include '../partials/penal-modal.php'; ?>
-<?php include '../partials/ten-codes-modal.php'; ?>
+<?php include '../partials/footer.php'; ?>
 </body>
 </html>
