@@ -195,12 +195,15 @@ $content = $data[0]['content'] ?? '<p>No 10-Codes available.</p>';
 <!-- Written Warnings -->
 <div class="bg-gray-800 rounded-xl p-6 shadow border border-gray-700 mt-8">
   <h2 class="text-xl font-semibold mb-4">Written Warnings</h2>
-  <?php if (!empty($warnings)): ?>
+  <?php
+    $validWarnings = array_filter($warnings, fn($w) => !empty($w['violation']) || !empty($w['notes']));
+  ?>
+  <?php if (!empty($validWarnings)): ?>
     <div class="space-y-2">
-      <?php foreach ($warnings as $w): ?>
+      <?php foreach ($validWarnings as $w): ?>
         <div class="bg-gray-700 rounded p-3">
-          <p><strong>Reason:</strong> <?= htmlspecialchars($w['violation'] ?? 'N/A') ?></p>
-          <p><strong>Warning:</strong> <?= htmlspecialchars($w['notes'] ?? 'No details provided.') ?></p>
+          <p><strong>Reason:</strong> <?= htmlspecialchars($w['violation']) ?></p>
+          <p><strong>Notes:</strong> <?= htmlspecialchars($w['notes']) ?></p>
           <p><strong>Location:</strong> <?= htmlspecialchars($w['location'] ?? 'N/A') ?></p>
           <p><strong>Officer:</strong> <?= htmlspecialchars($w['signature'] ?? 'Unknown') ?></p>
           <p><strong>Date:</strong> <?= htmlspecialchars($w['created_at'] ?? 'N/A') ?></p>
@@ -211,6 +214,7 @@ $content = $data[0]['content'] ?? '<p>No 10-Codes available.</p>';
     <p class="text-gray-400">No written warnings found.</p>
   <?php endif; ?>
 </div>
+
 
 
     <!-- Arrest Reports -->
