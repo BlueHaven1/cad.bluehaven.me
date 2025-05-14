@@ -92,8 +92,13 @@ $content = $data[0]['content'] ?? '';
       theme: 'snow',
       placeholder: 'Write all 10-Code content here...',
       modules: {
-        toolbar: [['bold', 'italic', 'underline'], ['link'], [{ 'list': 'bullet' }]]
-      }
+  toolbar: [
+    ['bold', 'italic', 'underline'],
+    ['link'],
+    [{ 'list': 'bullet' }],
+    [{ 'align': [] }]
+  ]
+}
     });
     quill.root.innerHTML = <?= json_encode($content) ?>;
   </script>
