@@ -144,8 +144,8 @@ foreach ($penal_titles as $title) {
         <?php foreach ($warrants as $w): 
           $civ = $civilians[$w['civilian_id']] ?? null;
           $officer = $officers[$w['officer_id']] ?? null;
-$deptId = $_SESSION['department_id'] ?? null;
 $deptString = 'Unknown Dept';
+$deptId = $w['department_id'] ?? null;
 
 if ($deptId) {
   [$deptResp] = supabaseRequest("departments?id=eq.$deptId", "GET");
@@ -154,6 +154,7 @@ if ($deptId) {
     $deptString = $deptData['name'];
   }
 }
+
         ?>
         <div class="bg-gray-800 p-4 rounded-md border border-gray-700 warrant-card">
           <div class="flex justify-between items-center mb-2">
