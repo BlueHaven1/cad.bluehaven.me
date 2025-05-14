@@ -17,6 +17,12 @@ $role = $_SESSION['role'] ?? 'guest';
       <a href="/admin/settings.php" class="block px-3 py-2 rounded hover:bg-gray-700 <?= basename($_SERVER['PHP_SELF']) === 'settings.php' ? 'bg-gray-700' : '' ?>">
         Settings
       </a>
+      <a href="/admin/penal-codes.php" class="block px-3 py-2 rounded hover:bg-gray-700 <?= basename($_SERVER['PHP_SELF']) === 'penal-codes.php' ? 'bg-gray-700' : '' ?>">
+        Penal Codes
+      </a>
+      <a href="/admin/ten-codes.php" class="block px-3 py-2 rounded hover:bg-gray-700 <?= basename($_SERVER['PHP_SELF']) === 'ten-codes.php' ? 'bg-gray-700' : '' ?>">
+        10-Codes
+      </a>
     <?php endif; ?>
   </nav>
 </aside>
