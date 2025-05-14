@@ -108,7 +108,6 @@ if (!empty($_GET['plate'])) {
 </main>
 
 <?php
-// Fallback to load penal modal data if not already present
 if (!isset($penal_titles) || !isset($sections_by_title)) {
   [$titlesResp] = supabaseRequest("penal_titles?order=created_at.asc", "GET");
   $penal_titles = json_decode($titlesResp, true) ?? [];
@@ -122,6 +121,7 @@ if (!isset($penal_titles) || !isset($sections_by_title)) {
   }
 }
 ?>
+
 
 <?php include '../partials/penal-modal.php'; ?>
 <?php include '../partials/ten-codes-modal.php'; ?>
