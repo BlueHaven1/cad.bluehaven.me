@@ -12,16 +12,7 @@ $username = $_SESSION['username'] ?? 'Unknown';
 $department = $_SESSION['department'] ?? 'N/A';
 $callsign = $_SESSION['callsign'] ?? 'None';
 
-$results = [];
-$searchPlate = '';
-
-if (!empty($_GET['plate'])) {
-  $searchPlate = trim($_GET['plate']);
-  [$resp, $code] = supabaseRequest("civilian_vehicles?plate=ilike.*" . urlencode($searchPlate) . "*", "GET");
-  $results = json_decode($resp, true);
-}
-
-// Fetch penal code data for modals
+// Preload Penal Code data for modal
 [$titlesResp] = supabaseRequest("penal_titles", "GET");
 $penal_titles = json_decode($titlesResp, true) ?? [];
 
@@ -34,7 +25,7 @@ foreach ($penal_titles as $title) {
   $sections_by_title[$tid] = array_filter($penal_sections, fn($s) => $s['title_id'] == $tid);
 }
 
-// Fetch 10-codes content for modal
+// Preload 10-Codes content
 [$res] = supabaseRequest("ten_codes?id=eq.1", "GET");
 $data = json_decode($res, true);
 $content = $data[0]['content'] ?? '<p>No 10-Codes available.</p>';
@@ -74,56 +65,82 @@ $content = $data[0]['content'] ?? '<p>No 10-Codes available.</p>';
   <div class="max-w-4xl mx-auto">
     <h1 class="text-4xl font-bold mb-6">Plate Search</h1>
 
-    <form method="GET" class="flex gap-4 mb-6">
+    <!-- Live Search Input -->
+    <div class="flex gap-4 mb-6">
       <input
         type="text"
-        name="plate"
+        id="plateInput"
         placeholder="Enter plate number"
-        value="<?= htmlspecialchars($searchPlate) ?>"
         class="flex-1 px-4 py-2 rounded bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
       >
-      <button type="submit" class="bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded font-semibold">
-        Search
-      </button>
-    </form>
+    </div>
 
-    <?php if (!empty($searchPlate)): ?>
-      <?php if (!empty($results)): ?>
-        <div class="space-y-4">
-          <?php foreach ($results as $v): ?>
-            <div class="bg-gray-800 p-4 rounded-lg border border-gray-700">
-              <h2 class="text-xl font-semibold"><?= htmlspecialchars($v['make'] . ' ' . $v['model']) ?></h2>
-              <p class="text-sm text-gray-400">
-                Plate: <?= htmlspecialchars($v['plate']) ?> |
-                Color: <?= htmlspecialchars($v['color']) ?>
-                <?= !empty($v['is_stolen']) ? '<span class="text-red-500 ml-2">🚨 Stolen</span>' : '' ?>
-              </p>
-
-              <?php
-                $civId = $v['civilian_id'];
-                [$civResp] = supabaseRequest("civilians?id=eq.$civId", "GET");
-                $civ = json_decode($civResp, true)[0] ?? null;
-              ?>
-              <?php if ($civ): ?>
-                <p class="text-sm text-gray-400">
-                  Registered Owner:
-                  <a href="civilian.php?id=<?= $civ['id'] ?>" class="text-blue-400 hover:underline">
-                    <?= htmlspecialchars($civ['name']) ?>
-                  </a> (<?= htmlspecialchars($civ['dob']) ?>)
-                </p>
-                <p class="text-sm text-gray-400">Phone: <?= htmlspecialchars($civ['phone']) ?></p>
-              <?php endif; ?>
-            </div>
-          <?php endforeach; ?>
-        </div>
-      <?php else: ?>
-        <p class="text-gray-400">No matching plates found.</p>
-      <?php endif; ?>
-    <?php endif; ?>
+    <!-- Results -->
+    <div id="plateResults" class="space-y-4"></div>
   </div>
 </main>
 
 <?php include '../partials/penal-modal.php'; ?>
 <?php include '../partials/ten-codes-modal.php'; ?>
+
+<!-- Plate Search Script with Animation -->
+<script>
+const input = document.getElementById('plateInput');
+const container = document.getElementById('plateResults');
+
+input.addEventListener('input', () => {
+  const plate = input.value.trim();
+
+  if (plate.length < 2) {
+    container.innerHTML = '';
+    return;
+  }
+
+  fetch(`../includes/search-plates.php?plate=${encodeURIComponent(plate)}`)
+    .then(res => res.json())
+    .then(data => {
+      if (!Array.isArray(data) || data.length === 0) {
+        container.innerHTML = '<p class="text-gray-400">No matching plates found.</p>';
+        return;
+      }
+
+      container.innerHTML = data.map(vehicle => {
+        const isStolen = vehicle.is_stolen ? '<span class="text-red-500 ml-2">🚨 Stolen</span>' : '';
+        const owner = vehicle.owner ?? {};
+        return `
+          <div class="plate-card bg-gray-800 p-4 rounded-lg border border-gray-700 opacity-0 translate-y-2">
+            <h2 class="text-xl font-semibold">${vehicle.make} ${vehicle.model}</h2>
+            <p class="text-sm text-gray-400">
+              Plate: ${vehicle.plate} |
+              Color: ${vehicle.color} ${isStolen}
+            </p>
+            ${owner.name ? `
+              <p class="text-sm text-gray-400">
+                Registered Owner:
+                <a href="civilian.php?id=${owner.id}" class="text-blue-400 hover:underline">
+                  ${owner.name}
+                </a> (${owner.dob})
+              </p>
+              <p class="text-sm text-gray-400">Phone: ${owner.phone}</p>
+            ` : ''}
+          </div>
+        `;
+      }).join('');
+
+      setTimeout(() => {
+        document.querySelectorAll('.plate-card').forEach((card, i) => {
+          setTimeout(() => {
+            card.classList.remove('opacity-0', 'translate-y-2');
+            card.classList.add('opacity-100', 'translate-y-0', 'transition-all', 'duration-300');
+          }, i * 40);
+        });
+      }, 10);
+    })
+    .catch(() => {
+      container.innerHTML = '<p class="text-red-500">Error loading results.</p>';
+    });
+});
+</script>
+
 </body>
 </html>
