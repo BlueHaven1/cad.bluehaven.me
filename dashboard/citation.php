@@ -180,6 +180,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     });
   }
 </script>
+<?php
+// ✅ Make sure modal partials receive correct variable names
+$penal_titles = $penalTitles;
+$sections_by_title = $sectionsByTitle;
+?>
+
 <?php include '../partials/penal-modal.php'; ?>
 <?php include '../partials/ten-codes-modal.php'; ?>
 </body>
