@@ -39,7 +39,7 @@ if (!isset($penal_titles) || !isset($sections_by_title)) {
             class="w-full flex justify-between items-center px-4 py-3 bg-gray-800 hover:bg-gray-700 transition"
             onclick="toggleSection('section-<?= $title_id ?>', this)">
             <span class="text-left">
-              <span class="block font-semibold"><?= htmlspecialchars($title['title']) ?></span>
+              <span class="block font-semibold"><?= htmlspecialchars($title['name']) ?></span>
               <span class="block text-sm text-gray-400"><?= htmlspecialchars($title['description']) ?></span>
             </span>
             <span class="text-xl font-bold transition-transform transform">+</span>
