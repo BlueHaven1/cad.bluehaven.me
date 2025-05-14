@@ -142,6 +142,7 @@ $weapons = json_decode($weapRes, true);
     </div>
   </div>
 </main>
-
+<?php include '../partials/penal-modal.php'; ?>
+<?php include '../partials/ten-codes-modal.php'; ?>
 </body>
 </html>

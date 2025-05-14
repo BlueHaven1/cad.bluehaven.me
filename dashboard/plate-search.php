@@ -106,5 +106,7 @@ if (!empty($_GET['plate'])) {
     <?php endif; ?>
   </div>
 </main>
+<?php include '../partials/penal-modal.php'; ?>
+<?php include '../partials/ten-codes-modal.php'; ?>
 </body>
 </html>

@@ -187,5 +187,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     document.getElementById('jail_time').value = selected.dataset.jail || '';
   }
 </script>
+<?php include '../partials/penal-modal.php'; ?>
+<?php include '../partials/ten-codes-modal.php'; ?>
 </body>
 </html>
