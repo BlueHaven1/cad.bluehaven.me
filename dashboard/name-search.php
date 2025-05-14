@@ -48,19 +48,23 @@ $content = $data[0]['content'] ?? '<p>No 10-Codes available.</p>';
     <h2 class="text-2xl font-bold mb-6">MDT</h2>
     <nav class="space-y-2">
       <a href="<?= $dashboard_link ?>" class="block px-3 py-2 rounded hover:bg-gray-700">Dashboard</a>
-      <a href="name-search.php" class="block px-3 py-2 rounded bg-gray-700">Name Search</a>
+      <a href="name-search.php" class="block px-3 py-2 rounded hover:bg-gray-700">Name Search</a>
       <a href="plate-search.php" class="block px-3 py-2 rounded hover:bg-gray-700">Plate Search</a>
-            <a href="citation.php" class="block px-3 py-2 rounded hover:bg-gray-700">Citation</a>
-      <a href="warning.php" class="block px-3 py-2 rounded hover:bg-gray-700">Written Warning</a>
-      <a href="arrest.php" class="block px-3 py-2 rounded hover:bg-gray-700">Arrest Report</a>
-      <a href="file-warrant.php" class="block px-3 py-2 rounded hover:bg-gray-700">File Warrant</a>
-      <a href="serve-warrant.php" class="block px-3 py-2 rounded hover:bg-gray-700">Serve Warrant</a>
+
+      <?php if (($_SESSION['active_mdt'] ?? '') !== 'safr'): ?>
+        <a href="citation.php" class="block px-3 py-2 rounded hover:bg-gray-700">Citation</a>
+        <a href="warning.php" class="block px-3 py-2 rounded hover:bg-gray-700">Written Warning</a>
+        <a href="arrest.php" class="block px-3 py-2 rounded hover:bg-gray-700">Arrest Report</a>
+        <a href="file-warrant.php" class="block px-3 py-2 rounded hover:bg-gray-700">File Warrant</a>
+        <a href="serve-warrant.php" class="block px-3 py-2 rounded hover:bg-gray-700">Serve Warrant</a>
+      <?php endif; ?>
     </nav>
   </div>
   <a href="exit-mdt.php" class="block px-3 py-2 mt-6 rounded bg-red-600 hover:bg-red-700 text-center font-semibold">
     Exit MDT
   </a>
 </aside>
+
 
 <!-- Main Content -->
 <main class="ml-64 p-8 w-full bg-gray-900 min-h-screen">
