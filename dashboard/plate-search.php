@@ -21,24 +21,23 @@ if (!empty($_GET['plate'])) {
   $results = json_decode($resp, true);
 }
 
-// Load penal code for modals
-if (!isset($penal_titles) || !isset($sections_by_title)) {
-  [$titlesResp] = supabaseRequest("penal_titles?order=created_at.asc", "GET");
-  $penal_titles = json_decode($titlesResp, true) ?? [];
+// Fetch penal code data for modals
+[$titlesResp] = supabaseRequest("penal_titles", "GET");
+$penal_titles = json_decode($titlesResp, true) ?? [];
 
-  [$sectionsResp] = supabaseRequest("penal_sections?order=title_id.asc", "GET");
-  $penal_sections = json_decode($sectionsResp, true) ?? [];
+[$sectionsResp] = supabaseRequest("penal_sections", "GET");
+$penal_sections = json_decode($sectionsResp, true) ?? [];
 
-  $sections_by_title = [];
-  foreach ($penal_sections as $s) {
-    $sections_by_title[$s['title_id']][] = $s;
-  }
+$sections_by_title = [];
+foreach ($penal_titles as $title) {
+  $tid = $title['id'];
+  $sections_by_title[$tid] = array_filter($penal_sections, fn($s) => $s['title_id'] == $tid);
 }
 
-// Load 10-codes content for modal
+// Fetch 10-codes content for modal
 [$res] = supabaseRequest("ten_codes?id=eq.1", "GET");
 $data = json_decode($res, true);
-$ten_codes_content = $data[0]['content'] ?? '<p>No 10-Codes available.</p>';
+$content = $data[0]['content'] ?? '<p>No 10-Codes available.</p>';
 ?>
 
 <!DOCTYPE html>
@@ -128,6 +127,5 @@ $ten_codes_content = $data[0]['content'] ?? '<p>No 10-Codes available.</p>';
 
 <?php include '../partials/penal-modal.php'; ?>
 <?php include '../partials/ten-codes-modal.php'; ?>
-
 </body>
 </html>
