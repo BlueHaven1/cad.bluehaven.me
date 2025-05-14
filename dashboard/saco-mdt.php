@@ -104,13 +104,17 @@ $content = $data[0]['content'] ?? '<p>No 10-Codes available.</p>';
       </div>
     </div>
 
-    <div class="mt-12 text-center text-gray-500 text-sm">
-      Dispatcher tools will be added here.
+    <!-- Unit Overview -->
+    <div class="bg-gray-800 rounded-2xl p-8 shadow-xl border border-gray-700 mt-12">
+      <h2 class="text-2xl font-semibold mb-6 text-white">Active Units Overview</h2>
+      <div id="unitsContainer" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-gray-300">
+        <p class="col-span-full text-gray-400">Loading units...</p>
+      </div>
     </div>
   </div>
 </main>
 
-<!-- Status Script -->
+<!-- Scripts -->
 <script>
   function updateStatus(status) {
     fetch('update-status.php', {
@@ -128,6 +132,36 @@ $content = $data[0]['content'] ?? '<p>No 10-Codes available.</p>';
       }
     });
   }
+
+  function loadUnits() {
+    fetch('../includes/get-units.php')
+      .then(res => res.json())
+      .then(units => {
+        const container = document.getElementById('unitsContainer');
+        if (!Array.isArray(units) || units.length === 0) {
+          container.innerHTML = '<p class="text-gray-400 col-span-full">No active units found.</p>';
+          return;
+        }
+
+        container.innerHTML = units.map(unit => `
+          <div class="bg-gray-700 rounded-xl p-4 border border-gray-600">
+            <p><strong>${unit.callsign}</strong></p>
+            <p class="text-sm text-gray-400">${unit.department}</p>
+            <p class="text-sm font-semibold mt-1 ${
+              unit.status === '10-8' ? 'text-green-400' :
+              unit.status === '10-6' ? 'text-yellow-400' :
+              'text-red-400'
+            }">${unit.status}</p>
+          </div>
+        `).join('');
+      })
+      .catch(() => {
+        document.getElementById('unitsContainer').innerHTML = '<p class="text-red-500 col-span-full">Failed to load units.</p>';
+      });
+  }
+
+  loadUnits();
+  setInterval(loadUnits, 10000);
 </script>
 
 <?php include '../partials/penal-modal.php'; ?>
