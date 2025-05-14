@@ -26,19 +26,14 @@ $sectionsByTitle = [];
 if (!empty($penalTitlesRaw)) {
     foreach ($penalTitlesRaw as $title) {
         $titleId = $title['id'];
-
-        // Fetch sections under this title
         [$sectionsResp, $sectionsCode] = supabaseRequest("penal_sections?title_id=eq.$titleId", "GET");
         $sections = $sectionsCode === 200 ? json_decode($sectionsResp, true) : [];
-
         if (!empty($sections)) {
-            $penalTitles[] = $title; // Only add titles that have at least one section
+            $penalTitles[] = $title;
             $sectionsByTitle[$titleId] = $sections;
         }
     }
 }
-
-
 
 // Form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -58,7 +53,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       'signature' => $signature
     ];
     [$resp, $code] = supabaseRequest("written_warnings", "POST", [$body]);
-
     $success = $code === 201;
     if (!$success) $error = 'Failed to submit written warning.';
   } else {
@@ -119,18 +113,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
       <div>
         <label class="block mb-1 font-semibold">Violation</label>
-<select name="violation" required class="w-full px-4 py-2 bg-gray-800 rounded">
-  <option value="">Select a penal code violation</option>
-  <?php foreach ($penalTitles as $title): ?>
-    <optgroup label="<?= htmlspecialchars($title['name']) ?>">
-      <?php foreach ($sectionsByTitle[$title['id']] as $section): ?>
-        <option value="<?= htmlspecialchars($section['code'] . ' - ' . $section['description']) ?>">
-          <?= htmlspecialchars($section['code']) ?> - <?= htmlspecialchars($section['description']) ?>
-        </option>
-      <?php endforeach; ?>
-    </optgroup>
-  <?php endforeach; ?>
-</select>
+        <select name="violation" required class="w-full px-4 py-2 bg-gray-800 rounded">
+          <option value="">Select a penal code violation</option>
+          <?php foreach ($penalTitles as $title): ?>
+            <optgroup label="<?= htmlspecialchars($title['name']) ?>">
+              <?php foreach ($sectionsByTitle[$title['id']] as $section): ?>
+                <option value="<?= htmlspecialchars($section['code'] . ' - ' . $section['description']) ?>">
+                  <?= htmlspecialchars($section['code']) ?> - <?= htmlspecialchars($section['description']) ?>
+                </option>
+              <?php endforeach; ?>
+            </optgroup>
+          <?php endforeach; ?>
+        </select>
       </div>
 
       <div>
@@ -174,6 +168,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     });
   }
 </script>
+
+<?php
+// ✅ Make sure modal partials receive correct variable names
+$penal_titles = $penalTitles;
+$sections_by_title = $sectionsByTitle;
+?>
+
 <?php include '../partials/penal-modal.php'; ?>
 <?php include '../partials/ten-codes-modal.php'; ?>
 </body>
