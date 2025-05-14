@@ -127,36 +127,43 @@ $active_units = json_decode($unitRes, true) ?? [];
     </div>
 
     <!-- Create Call Panel -->
-    <div class="bg-gray-800 rounded-2xl p-6 shadow-xl border border-gray-700 mt-12">
-      <h2 class="text-2xl font-semibold mb-6">Create New Call</h2>
-      <form method="POST" action="../includes/create-call.php" class="space-y-4">
-        <div>
-          <label class="block text-sm mb-1 text-gray-300">Title</label>
-          <input type="text" name="title" required class="w-full px-4 py-2 rounded bg-gray-700 border border-gray-600 focus:outline-none">
-        </div>
-        <div>
-          <label class="block text-sm mb-1 text-gray-300">Location</label>
-          <input type="text" name="location" required class="w-full px-4 py-2 rounded bg-gray-700 border border-gray-600 focus:outline-none">
-        </div>
-        <div>
-          <label class="block text-sm mb-1 text-gray-300">Description</label>
-          <textarea name="description" rows="4" required class="w-full px-4 py-2 rounded bg-gray-700 border border-gray-600 focus:outline-none"></textarea>
-        </div>
-        <div>
-          <label class="block text-sm mb-1 text-gray-300">Assign Units</label>
-          <select name="units[]" multiple required class="w-full px-4 py-2 rounded bg-gray-700 border border-gray-600 h-40 overflow-y-auto focus:outline-none">
-            <?php foreach ($active_units as $unit): ?>
-              <option value="<?= htmlspecialchars($unit['user_id']) ?>">
-                <?= htmlspecialchars("{$unit['callsign']} - {$unit['department']} ({$unit['status']})") ?>
-              </option>
-            <?php endforeach; ?>
-          </select>
-        </div>
-        <button type="submit" class="bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded font-semibold">
-          Create Call
-        </button>
-      </form>
+<!-- Create Call Panel -->
+<div class="bg-gray-800 rounded-2xl p-6 shadow-xl border border-gray-700 mt-12">
+  <h2 class="text-2xl font-semibold mb-6">Create New Call</h2>
+  <form method="POST" action="../includes/create-call.php" class="space-y-4">
+    <div>
+      <label class="block text-sm mb-1 text-gray-300">Title</label>
+      <input type="text" name="title" required class="w-full px-4 py-2 rounded bg-gray-700 border border-gray-600 focus:outline-none">
     </div>
+    <div>
+      <label class="block text-sm mb-1 text-gray-300">Location</label>
+      <input type="text" name="location" required class="w-full px-4 py-2 rounded bg-gray-700 border border-gray-600 focus:outline-none">
+    </div>
+    <div>
+      <label class="block text-sm mb-1 text-gray-300">Postal</label>
+      <input type="text" name="postal" class="w-full px-4 py-2 rounded bg-gray-700 border border-gray-600 focus:outline-none">
+    </div>
+    <div>
+      <label class="block text-sm mb-1 text-gray-300">Description</label>
+      <textarea name="description" rows="4" required class="w-full px-4 py-2 rounded bg-gray-700 border border-gray-600 focus:outline-none"></textarea>
+    </div>
+    <div>
+      <label class="block text-sm mb-1 text-gray-300">Assign Units</label>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 max-h-60 overflow-y-auto pr-2 scrollbar">
+        <?php foreach ($active_units as $unit): ?>
+          <label class="flex items-center space-x-2 bg-gray-700 px-3 py-2 rounded">
+            <input type="checkbox" name="units[]" value="<?= htmlspecialchars($unit['user_id']) ?>" class="accent-blue-500">
+            <span><?= htmlspecialchars("{$unit['callsign']} - {$unit['department']} ({$unit['status']})") ?></span>
+          </label>
+        <?php endforeach; ?>
+      </div>
+    </div>
+    <button type="submit" class="bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded font-semibold">
+      Create Call
+    </button>
+  </form>
+</div>
+
   </div>
 </main>
 
