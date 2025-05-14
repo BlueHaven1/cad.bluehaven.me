@@ -1,6 +1,7 @@
 <?php
 session_start();
 require_once '../includes/supabase.php';
+require_once '../includes/discord-webhook.php';
 
 if (!isset($_SESSION['user_id']) || !isset($_SESSION['mdt_active'])) {
   header("Location: ../patrol.php");
@@ -22,9 +23,44 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['serve_warrant_id'])) 
   ];
 
   [$resp, $code] = supabaseRequest("warrants?id=eq.$warrant_id", "PATCH", [$update]);
-
   $success = $code === 204;
-  if (!$success) $error = 'Failed to serve warrant.';
+
+  if (!$success) {
+    $error = 'Failed to serve warrant.';
+  } else {
+    // Fetch warrant to prepare log
+    [$wResp] = supabaseRequest("warrants?id=eq.$warrant_id", "GET");
+    $w = json_decode($wResp, true)[0] ?? null;
+
+    if ($w) {
+      // Fetch civilian
+      [$civResp] = supabaseRequest("civilians?id=eq.{$w['civilian_id']}", "GET");
+      $civilian = json_decode($civResp, true)[0] ?? ['name' => 'Unknown', 'dob' => 'N/A'];
+
+      // Fetch officer
+      [$offResp] = supabaseRequest("users?id=eq.{$w['officer_id']}", "GET");
+      $officerFiled = json_decode($offResp, true)[0] ?? null;
+      $filedBy = $officerFiled['username'] ?? $w['signature'] ?? 'Unknown';
+
+      // Fetch department
+      $filedDept = 'Unknown Dept';
+      if (!empty($w['department_id'])) {
+        [$deptResp] = supabaseRequest("departments?id=eq.{$w['department_id']}", "GET");
+        $deptData = json_decode($deptResp, true)[0] ?? null;
+        if ($deptData) $filedDept = $deptData['name'];
+      }
+
+      // Send Discord log
+      sendDiscordWarrantLog('serve', [
+        'served_by' => $_SESSION['username'],
+        'served_dept' => $_SESSION['department'],
+        'civilian' => $civilian['name'],
+        'dob' => $civilian['dob'],
+        'filed_by' => $filedBy,
+        'filed_dept' => $filedDept
+      ]);
+    }
+  }
 }
 
 // Pagination
@@ -38,7 +74,6 @@ $warrants = json_decode($warrantResp, true) ?? [];
 
 [$countResp] = supabaseRequest("warrants?is_served=is.false&select=id", "GET");
 $totalWarrants = count(json_decode($countResp, true));
-
 
 // Fetch civilians and officers
 $civilians = [];
@@ -82,6 +117,7 @@ foreach ($penal_titles as $title) {
   $sections_by_title[$tid] = array_filter($penal_sections, fn($s) => $s['title_id'] == $tid);
 }
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">

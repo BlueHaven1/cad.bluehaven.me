@@ -10,8 +10,13 @@ function sendDiscordWarrantLog($type, $data) {
          . "**Fine:** \$" . ($data['fine'] ?? 0) . " | **Jail Time:** {$data['jail_time']} mins\n"
          . "**Location:** {$data['location']}\n"
          . "**Reason:** {$data['reason']}";
-  } else {
-    return; // Ignore unknown types
+  }
+
+  if ($type === 'serve') {
+    $msg = "**✅ Warrant Served**\n"
+         . "**Served by:** {$data['served_by']} ({$data['served_dept']})\n"
+         . "**Target:** {$data['civilian']} ({$data['dob']})\n"
+         . "**Originally filed by:** {$data['filed_by']} ({$data['filed_dept']})";
   }
 
   $payload = json_encode(['content' => $msg]);
