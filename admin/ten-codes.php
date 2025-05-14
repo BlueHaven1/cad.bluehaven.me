@@ -12,8 +12,11 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'superadmin') {
 $codes = json_decode($res, true) ?? [];
 
 $grouped = [];
+
 foreach ($codes as $c) {
-  $grouped[$c['category']][] = $c;
+  if (is_array($c) && isset($c['category'])) {
+    $grouped[$c['category']][] = $c;
+  }
 }
 ?>
 
