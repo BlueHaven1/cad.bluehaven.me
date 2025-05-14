@@ -58,6 +58,19 @@ foreach ($warrants as $w) {
     $officers[$oid] = json_decode($userResp, true)[0] ?? null;
   }
 }
+
+// Fetch penal data for modal support
+[$titlesResp] = supabaseRequest("penal_titles", "GET");
+$penal_titles = json_decode($titlesResp, true) ?? [];
+
+[$sectionsResp] = supabaseRequest("penal_sections", "GET");
+$penal_sections = json_decode($sectionsResp, true) ?? [];
+
+$sections_by_title = [];
+foreach ($penal_titles as $title) {
+  $tid = $title['id'];
+  $sections_by_title[$tid] = array_filter($penal_sections, fn($s) => $s['title_id'] == $tid);
+}
 ?>
 
 <!DOCTYPE html>
@@ -124,23 +137,23 @@ foreach ($warrants as $w) {
           $civ = $civilians[$w['civilian_id']] ?? null;
           $officer = $officers[$w['officer_id']] ?? null;
         ?>
-<div class="bg-gray-800 p-4 rounded-md border border-gray-700 warrant-card">
-  <div class="flex justify-between items-center mb-2">
-    <h2 class="text-xl font-medium"><?= htmlspecialchars($civ['name'] ?? 'Unknown Civilian') ?></h2>
-    <span class="text-sm text-gray-400"><?= htmlspecialchars($civ['dob'] ?? 'N/A') ?></span>
-  </div>
-  <div class="text-sm text-gray-300 space-y-1">
-    <p><strong>Violation:</strong> <?= htmlspecialchars($w['violation']) ?></p>
-    <p><strong>Fine:</strong> $<?= $w['fine'] ?? '0' ?> • <strong>Jail:</strong> <?= $w['jail_time'] ?? '0' ?> mins</p>
-    <p><strong>Reason:</strong> <?= htmlspecialchars($w['reason']) ?></p>
-    <p><strong>Location:</strong> <?= htmlspecialchars($w['location']) ?></p>
-    <p><strong>Officer:</strong> <?= htmlspecialchars($officer['username'] ?? $w['signature']) ?> (<?= htmlspecialchars($officer['department'] ?? 'Unknown Dept') ?>)</p>
-  </div>
-  <form method="POST" class="mt-3">
-    <input type="hidden" name="serve_warrant_id" value="<?= $w['id'] ?>">
-    <button type="submit" class="bg-green-600 hover:bg-green-700 px-3 py-1.5 rounded text-sm font-semibold">Mark as Served</button>
-  </form>
-</div>
+        <div class="bg-gray-800 p-4 rounded-md border border-gray-700 warrant-card">
+          <div class="flex justify-between items-center mb-2">
+            <h2 class="text-xl font-medium"><?= htmlspecialchars($civ['name'] ?? 'Unknown Civilian') ?></h2>
+            <span class="text-sm text-gray-400"><?= htmlspecialchars($civ['dob'] ?? 'N/A') ?></span>
+          </div>
+          <div class="text-sm text-gray-300 space-y-1">
+            <p><strong>Violation:</strong> <?= htmlspecialchars($w['violation']) ?></p>
+            <p><strong>Fine:</strong> $<?= $w['fine'] ?? '0' ?> • <strong>Jail:</strong> <?= $w['jail_time'] ?? '0' ?> mins</p>
+            <p><strong>Reason:</strong> <?= htmlspecialchars($w['reason']) ?></p>
+            <p><strong>Location:</strong> <?= htmlspecialchars($w['location']) ?></p>
+            <p><strong>Officer:</strong> <?= htmlspecialchars($officer['username'] ?? $w['signature']) ?> (<?= htmlspecialchars($officer['department'] ?? 'Unknown Dept') ?>)</p>
+          </div>
+          <form method="POST" class="mt-3">
+            <input type="hidden" name="serve_warrant_id" value="<?= $w['id'] ?>">
+            <button type="submit" class="bg-green-600 hover:bg-green-700 px-3 py-1.5 rounded text-sm font-semibold">Mark as Served</button>
+          </form>
+        </div>
         <?php endforeach; ?>
       </div>
 
@@ -155,13 +168,7 @@ foreach ($warrants as $w) {
     <?php endif; ?>
   </div>
 </main>
-<?php
-$sections_by_title = []; 
-foreach ($penal_titles as $title) {
-  $tid = $title['id'];
-  $sections_by_title[$tid] = array_filter($penal_sections, fn($s) => $s['title_id'] == $tid);
-}
-?>
+
 <?php include '../partials/penal-modal.php'; ?>
 <?php include '../partials/ten-codes-modal.php'; ?>
 </body>
