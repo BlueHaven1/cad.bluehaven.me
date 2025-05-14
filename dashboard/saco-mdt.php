@@ -2,6 +2,7 @@
 session_start();
 require_once '../includes/supabase.php';
 
+// Restrict to SACO only
 if (!isset($_SESSION['user_id']) || !isset($_SESSION['mdt_active']) || ($_SESSION['department'] ?? '') !== 'SACO') {
     header("Location: ../patrol.php");
     exit;
@@ -30,9 +31,8 @@ foreach ($penal_titles as $title) {
 $data = json_decode($res, true);
 $content = $data[0]['content'] ?? '<p>No 10-Codes available.</p>';
 
-// Fetch active units
 [$unitRes] = supabaseRequest("unit_status", "GET");
-$units = json_decode($unitRes, true) ?? [];
+$active_units = json_decode($unitRes, true) ?? [];
 ?>
 
 <!DOCTYPE html>
@@ -105,24 +105,7 @@ $units = json_decode($unitRes, true) ?? [];
       </div>
     </div>
 
-    <!-- Create Call -->
-    <div class="bg-gray-800 rounded-2xl p-6 mt-12 shadow-xl border border-gray-700">
-      <h2 class="text-2xl font-semibold mb-6">Create New Call</h2>
-      <form method="POST" action="../includes/create-call.php" class="space-y-4">
-        <input type="text" name="title" placeholder="Call Title" required class="w-full px-4 py-2 rounded bg-gray-700">
-        <textarea name="description" placeholder="Call Description" required class="w-full px-4 py-2 rounded bg-gray-700"></textarea>
-        <select name="units[]" multiple required class="w-full px-4 py-2 rounded bg-gray-700 h-40 overflow-y-auto">
-          <?php foreach ($units as $unit): ?>
-            <option value="<?= $unit['user_id'] ?>">
-              <?= htmlspecialchars($unit['callsign'] . ' - ' . $unit['department'] . ' (' . $unit['status'] . ')') ?>
-            </option>
-          <?php endforeach; ?>
-        </select>
-        <button type="submit" class="bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded font-semibold">Create Call</button>
-      </form>
-    </div>
-
-    <!-- Active Units -->
+    <!-- Unit Overview -->
     <div class="bg-gray-800 rounded-2xl p-6 shadow-xl border border-gray-700 mt-12">
       <h2 class="text-2xl font-semibold mb-6">Active Units Overview</h2>
       <div class="overflow-x-auto">
@@ -141,6 +124,38 @@ $units = json_decode($unitRes, true) ?? [];
           </table>
         </div>
       </div>
+    </div>
+
+    <!-- Create Call Panel -->
+    <div class="bg-gray-800 rounded-2xl p-6 shadow-xl border border-gray-700 mt-12">
+      <h2 class="text-2xl font-semibold mb-6">Create New Call</h2>
+      <form method="POST" action="../includes/create-call.php" class="space-y-4">
+        <div>
+          <label class="block text-sm mb-1 text-gray-300">Title</label>
+          <input type="text" name="title" required class="w-full px-4 py-2 rounded bg-gray-700 border border-gray-600 focus:outline-none">
+        </div>
+        <div>
+          <label class="block text-sm mb-1 text-gray-300">Location</label>
+          <input type="text" name="location" required class="w-full px-4 py-2 rounded bg-gray-700 border border-gray-600 focus:outline-none">
+        </div>
+        <div>
+          <label class="block text-sm mb-1 text-gray-300">Description</label>
+          <textarea name="description" rows="4" required class="w-full px-4 py-2 rounded bg-gray-700 border border-gray-600 focus:outline-none"></textarea>
+        </div>
+        <div>
+          <label class="block text-sm mb-1 text-gray-300">Assign Units</label>
+          <select name="units[]" multiple required class="w-full px-4 py-2 rounded bg-gray-700 border border-gray-600 h-40 overflow-y-auto focus:outline-none">
+            <?php foreach ($active_units as $unit): ?>
+              <option value="<?= htmlspecialchars($unit['user_id']) ?>">
+                <?= htmlspecialchars("{$unit['callsign']} - {$unit['department']} ({$unit['status']})") ?>
+              </option>
+            <?php endforeach; ?>
+          </select>
+        </div>
+        <button type="submit" class="bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded font-semibold">
+          Create Call
+        </button>
+      </form>
     </div>
   </div>
 </main>
