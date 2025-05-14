@@ -79,7 +79,7 @@ $content = $data[0]['content'] ?? '<p>No 10-Codes available.</p>';
 <?php include '../partials/penal-modal.php'; ?>
 <?php include '../partials/ten-codes-modal.php'; ?>
 
-<!-- Live Search Script -->
+<!-- Live Search Script with Animation -->
 <script>
 const input = document.getElementById('searchInput');
 const resultsContainer = document.getElementById('resultsContainer');
@@ -101,13 +101,24 @@ input.addEventListener('input', () => {
       }
 
       resultsContainer.innerHTML = data.map(civ => `
-        <a href="civilian.php?id=${civ.id}" class="block bg-gray-800 p-4 rounded-lg shadow border border-gray-700 hover:bg-gray-700 transition">
+        <a href="civilian.php?id=${civ.id}" 
+           class="result-card block bg-gray-800 p-4 rounded-lg shadow border border-gray-700 hover:bg-gray-700 transform opacity-0 translate-y-2">
           <h2 class="text-xl font-semibold text-white">${civ.name}</h2>
           <p class="text-sm text-gray-400">DOB: ${civ.dob}</p>
           <p class="text-sm text-gray-400">Phone: ${civ.phone}</p>
           <p class="text-sm text-gray-400">Address: ${civ.address}</p>
         </a>
       `).join('');
+
+      // Animate results in sequence
+      setTimeout(() => {
+        document.querySelectorAll('.result-card').forEach((card, index) => {
+          setTimeout(() => {
+            card.classList.remove('opacity-0', 'translate-y-2');
+            card.classList.add('opacity-100', 'translate-y-0', 'transition-all', 'duration-300');
+          }, index * 40);
+        });
+      }, 10);
     })
     .catch(() => {
       resultsContainer.innerHTML = '<p class="text-red-500">Error fetching data.</p>';
