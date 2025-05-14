@@ -6,7 +6,7 @@ $content = $data[0]['content'] ?? '<p>No 10-Codes available.</p>';
 ?>
 
 <!-- Button -->
-<button onclick="openTenModal()" class="fixed bottom-6 right-24 bg-gray-800 hover:bg-gray-700 text-white text-sm px-4 py-2 rounded shadow-lg z-40">
+<button onclick="openTenModal()" class="fixed bottom-6 right-36 bg-gray-800 hover:bg-gray-700 text-white text-sm px-4 py-2 rounded shadow-lg z-40">
   10-Codes
 </button>
 
