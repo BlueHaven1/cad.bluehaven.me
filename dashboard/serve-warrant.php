@@ -156,7 +156,6 @@ foreach ($warrants as $w) {
   </div>
 </main>
 <?php
-// Fix for modal compatibility
 $sections_by_title = []; 
 foreach ($penal_titles as $title) {
   $tid = $title['id'];
