@@ -56,6 +56,16 @@ foreach ($warrants as $w) {
   if ($oid && !isset($officers[$oid])) {
     [$userResp] = supabaseRequest("users?id=eq.$oid", "GET");
     $officers[$oid] = json_decode($userResp, true)[0] ?? null;
+
+    // Fetch officer's departments
+    [$deptResp] = supabaseRequest("user_departments?user_id=eq.$oid", "GET");
+    $deptIds = array_column(json_decode($deptResp, true), 'department_id');
+
+    [$allDeptResp] = supabaseRequest("departments", "GET");
+    $allDepts = json_decode($allDeptResp, true) ?? [];
+
+    $officerDepts = array_filter($allDepts, fn($d) => in_array($d['id'], $deptIds));
+    $officers[$oid]['department_names'] = array_map(fn($d) => $d['name'], $officerDepts);
   }
 }
 
@@ -134,6 +144,8 @@ foreach ($penal_titles as $title) {
         <?php foreach ($warrants as $w): 
           $civ = $civilians[$w['civilian_id']] ?? null;
           $officer = $officers[$w['officer_id']] ?? null;
+          $deptList = $officer['department_names'] ?? [];
+          $deptString = !empty($deptList) ? implode(', ', $deptList) : 'Unknown Dept';
         ?>
         <div class="bg-gray-800 p-4 rounded-md border border-gray-700 warrant-card">
           <div class="flex justify-between items-center mb-2">
@@ -145,7 +157,7 @@ foreach ($penal_titles as $title) {
             <p><strong>Fine:</strong> $<?= $w['fine'] ?? '0' ?> • <strong>Jail:</strong> <?= $w['jail_time'] ?? '0' ?> mins</p>
             <p><strong>Reason:</strong> <?= htmlspecialchars($w['reason']) ?></p>
             <p><strong>Location:</strong> <?= htmlspecialchars($w['location']) ?></p>
-            <p><strong>Officer:</strong> <?= htmlspecialchars($officer['username'] ?? $w['signature']) ?> (<?= htmlspecialchars($officer['department'] ?? 'Unknown Dept') ?>)</p>
+            <p><strong>Officer:</strong> <?= htmlspecialchars($officer['username'] ?? $w['signature']) ?> (<?= htmlspecialchars($deptString) ?>)</p>
           </div>
           <form method="POST" class="mt-3">
             <input type="hidden" name="serve_warrant_id" value="<?= $w['id'] ?>">
