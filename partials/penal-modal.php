@@ -1,7 +1,9 @@
 <?php
-if (!isset($penal_titles) || !isset($sections_by_title)) {
+if (!function_exists('supabaseRequest')) {
   require_once '../includes/supabase.php';
+}
 
+if (!isset($penal_titles) || !isset($sections_by_title)) {
   [$titlesResp] = supabaseRequest("penal_titles?order=created_at.asc", "GET");
   $penal_titles = json_decode($titlesResp, true) ?? [];
 
@@ -15,15 +17,14 @@ if (!isset($penal_titles) || !isset($sections_by_title)) {
 }
 ?>
 
-<!-- Trigger Button -->
+<!-- Button -->
 <button onclick="openPenalModal()" class="fixed bottom-6 right-6 bg-gray-800 hover:bg-gray-700 text-white text-sm px-4 py-2 rounded shadow-lg z-40">
   Penal Code
 </button>
 
-<!-- Penal Code Modal -->
+<!-- Modal -->
 <div id="penalModal" class="fixed inset-0 hidden flex items-center justify-center bg-black bg-opacity-50 z-50">
   <div class="bg-gray-900 text-white w-full max-w-3xl max-h-[80vh] rounded-lg p-6 overflow-y-auto transform scale-95 opacity-0 transition-all duration-300 modal-inner">
-
     <div class="flex justify-between items-center mb-4">
       <h2 class="text-xl font-bold">Penal Code</h2>
       <button onclick="closePenalModal()" class="text-gray-400 hover:text-white text-2xl leading-none">&times;</button>
@@ -58,7 +59,6 @@ if (!isset($penal_titles) || !isset($sections_by_title)) {
         </div>
       <?php endforeach; ?>
     </div>
-
   </div>
 </div>
 
