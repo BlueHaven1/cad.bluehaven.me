@@ -11,6 +11,24 @@ $status = $_SESSION['status'] ?? '10-7';
 $username = $_SESSION['username'] ?? 'Unknown';
 $department = $_SESSION['department'] ?? 'N/A';
 $callsign = $_SESSION['callsign'] ?? 'None';
+
+// Preload penal code data for modals
+[$titlesResp] = supabaseRequest("penal_titles", "GET");
+$penal_titles = json_decode($titlesResp, true) ?? [];
+
+[$sectionsResp] = supabaseRequest("penal_sections", "GET");
+$penal_sections = json_decode($sectionsResp, true) ?? [];
+
+$sections_by_title = [];
+foreach ($penal_titles as $title) {
+  $tid = $title['id'];
+  $sections_by_title[$tid] = array_filter($penal_sections, fn($s) => $s['title_id'] == $tid);
+}
+
+// Preload 10-Codes content
+[$res] = supabaseRequest("ten_codes?id=eq.1", "GET");
+$data = json_decode($res, true);
+$content = $data[0]['content'] ?? '<p>No 10-Codes available.</p>';
 ?>
 
 <!DOCTYPE html>
@@ -22,29 +40,29 @@ $callsign = $_SESSION['callsign'] ?? 'None';
 </head>
 <body class="bg-gray-900 text-white flex min-h-screen">
 
-  <!-- Sidebar -->
-  <aside class="w-64 bg-gray-800 p-4 flex flex-col justify-between fixed h-full">
-    <div>
-      <h2 class="text-2xl font-bold mb-6">MDT</h2>
-      <nav class="space-y-2">
-        <a href="mdt.php" class="block px-3 py-2 rounded hover:bg-gray-700 bg-gray-700">Dashboard</a>
-        <a href="name-search.php" class="block px-3 py-2 rounded hover:bg-gray-700">Name Search</a>
-        <a href="plate-search.php" class="block px-3 py-2 rounded hover:bg-gray-700">Plate Search</a>
-        <a href="citation.php" class="block px-3 py-2 rounded hover:bg-gray-700">Citation</a>
-        <a href="warning.php" class="block px-3 py-2 rounded hover:bg-gray-700">Written Warning</a>
-        <a href="arrest.php" class="block px-3 py-2 rounded hover:bg-gray-700">Arrest Report</a>
-        <a href="file-warrant.php" class="block px-3 py-2 rounded hover:bg-gray-700">File Warrant</a>
-        <a href="serve-warrant.php" class="block px-3 py-2 rounded hover:bg-gray-700">Serve Warrant</a>
-        <a href="penal-code.php" class="block px-3 py-2 rounded hover:bg-gray-700">Penal Code</a>
-        <a href="10-codes.php" class="block px-3 py-2 rounded hover:bg-gray-700">10-Codes</a>
-      </nav>
-    </div>
-    <a href="exit-mdt.php" class="block px-3 py-2 mt-6 rounded bg-red-600 hover:bg-red-700 text-center font-semibold">
-      Exit MDT
-    </a>
-  </aside>
+<!-- Sidebar -->
+<aside class="w-64 bg-gray-800 p-4 flex flex-col justify-between fixed h-full">
+  <div>
+    <h2 class="text-2xl font-bold mb-6">MDT</h2>
+    <nav class="space-y-2">
+      <a href="mdt.php" class="block px-3 py-2 rounded hover:bg-gray-700 bg-gray-700">Dashboard</a>
+      <a href="name-search.php" class="block px-3 py-2 rounded hover:bg-gray-700">Name Search</a>
+      <a href="plate-search.php" class="block px-3 py-2 rounded hover:bg-gray-700">Plate Search</a>
+      <a href="citation.php" class="block px-3 py-2 rounded hover:bg-gray-700">Citation</a>
+      <a href="warning.php" class="block px-3 py-2 rounded hover:bg-gray-700">Written Warning</a>
+      <a href="arrest.php" class="block px-3 py-2 rounded hover:bg-gray-700">Arrest Report</a>
+      <a href="file-warrant.php" class="block px-3 py-2 rounded hover:bg-gray-700">File Warrant</a>
+      <a href="serve-warrant.php" class="block px-3 py-2 rounded hover:bg-gray-700">Serve Warrant</a>
+      <a href="penal-code.php" class="block px-3 py-2 rounded hover:bg-gray-700">Penal Code</a>
+      <a href="10-codes.php" class="block px-3 py-2 rounded hover:bg-gray-700">10-Codes</a>
+    </nav>
+  </div>
+  <a href="exit-mdt.php" class="block px-3 py-2 mt-6 rounded bg-red-600 hover:bg-red-700 text-center font-semibold">
+    Exit MDT
+  </a>
+</aside>
 
-  <!-- Main Content -->
+<!-- Main Content -->
 <main class="ml-64 p-8 w-full bg-gray-900 min-h-screen">
   <div class="max-w-7xl mx-auto">
     <h1 class="text-4xl font-bold mb-8">MDT Dashboard</h1>
@@ -73,58 +91,56 @@ $callsign = $_SESSION['callsign'] ?? 'None';
           <p class="text-sm text-gray-400 uppercase mb-1">Status</p>
           <div class="flex flex-col sm:flex-row sm:items-center justify-between">
             <p id="currentStatus" class="text-xl font-semibold text-green-400 mb-4 sm:mb-0"><?= htmlspecialchars($status) ?></p>
-<div class="flex flex-wrap gap-2 mt-2">
-  <?php if ($status === '10-7'): ?>
-    <button onclick="updateStatus('10-8')" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded text-sm">
-      Go 10-8
-    </button>
-  <?php else: ?>
-    <?php
-      $allStatuses = ['10-8', '10-6', '10-15', '10-23', '10-97', '10-7'];
-      foreach ($allStatuses as $opt):
-        $isActive = $status === $opt;
-        $classes = $isActive
-          ? 'bg-green-600 text-white ring-2 ring-green-400'
-          : 'bg-gray-700 hover:bg-gray-600 text-white';
-    ?>
-      <button onclick="updateStatus('<?= $opt ?>')" class="<?= $classes ?> px-4 py-2 rounded text-sm"><?= $opt ?></button>
-    <?php endforeach; ?>
-  <?php endif; ?>
-</div>
-
+            <div class="flex flex-wrap gap-2 mt-2">
+              <?php if ($status === '10-7'): ?>
+                <button onclick="updateStatus('10-8')" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded text-sm">
+                  Go 10-8
+                </button>
+              <?php else: ?>
+                <?php
+                $allStatuses = ['10-8', '10-6', '10-15', '10-23', '10-97', '10-7'];
+                foreach ($allStatuses as $opt):
+                  $isActive = $status === $opt;
+                  $classes = $isActive
+                    ? 'bg-green-600 text-white ring-2 ring-green-400'
+                    : 'bg-gray-700 hover:bg-gray-600 text-white';
+                ?>
+                  <button onclick="updateStatus('<?= $opt ?>')" class="<?= $classes ?> px-4 py-2 rounded text-sm"><?= $opt ?></button>
+                <?php endforeach; ?>
+              <?php endif; ?>
+            </div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Optional: Future Features Section -->
     <div class="mt-12 text-center text-gray-500 text-sm">
       Add more MDT tools. Noted
     </div>
   </div>
 </main>
 
+<!-- AJAX Script -->
+<script>
+  function updateStatus(status) {
+    fetch('update-status.php', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+      body: 'status=' + encodeURIComponent(status)
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        document.getElementById('currentStatus').textContent = data.newStatus;
+        location.reload();
+      } else {
+        alert('Failed to update status.');
+      }
+    });
+  }
+</script>
 
-  <!-- AJAX Script -->
-  <script>
-    function updateStatus(status) {
-      fetch('update-status.php', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-        body: 'status=' + encodeURIComponent(status)
-      })
-      .then(res => res.json())
-      .then(data => {
-        if (data.success) {
-          document.getElementById('currentStatus').textContent = data.newStatus;
-          location.reload();
-        } else {
-          alert('Failed to update status.');
-        }
-      });
-    }
-  </script>
-  <?php include '../partials/penal-modal.php'; ?>
+<?php include '../partials/penal-modal.php'; ?>
 <?php include '../partials/ten-codes-modal.php'; ?>
 </body>
 </html>
