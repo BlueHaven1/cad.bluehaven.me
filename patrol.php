@@ -7,10 +7,19 @@ if (!isset($_SESSION['user_id'])) {
     exit;
 }
 
-// Fetch departments
-[$resp, $status] = supabaseRequest('departments', 'GET');
-$departments = $status === 200 ? json_decode($resp, true) : [];
-$departments = array_filter($departments, fn($d) => strtolower($d['name']) !== 'civilian');
+// Fetch assigned department IDs for the logged-in user
+[$udResp] = supabaseRequest("user_departments?user_id=eq.{$_SESSION['user_id']}", "GET");
+$assignedDeptIds = array_column(json_decode($udResp, true), 'department_id');
+
+// Fetch all departments
+[$deptResp] = supabaseRequest("departments", "GET");
+$allDepartments = json_decode($deptResp, true) ?? [];
+
+// Filter to only assigned departments (exclude "Civilian")
+$departments = array_filter($allDepartments, function ($d) use ($assignedDeptIds) {
+    return in_array($d['id'], $assignedDeptIds) && strtolower($d['name']) !== 'civilian';
+});
+
 
 $error = '';
 
