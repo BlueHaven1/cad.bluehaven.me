@@ -13,40 +13,66 @@ $department = $_SESSION['department'] ?? 'N/A';
 $callsign = $_SESSION['callsign'] ?? 'None';
 
 $civId = $_GET['id'] ?? null;
+
 if (!$civId) {
     echo "No civilian ID provided.";
     exit;
 }
 
-// Fetch civilian data
+// Get civilian
 [$civRes] = supabaseRequest("civilians?id=eq.$civId", "GET");
 $civilian = json_decode($civRes, true)[0] ?? null;
+
 if (!$civilian) {
     echo "Civilian not found.";
     exit;
 }
 
-// Fetch associated data
+// Get licenses
 [$licRes] = supabaseRequest("civilian_licenses?civilian_id=eq.$civId", "GET");
 $licenses = json_decode($licRes, true);
 
+// Get vehicles
 [$vehRes] = supabaseRequest("civilian_vehicles?civilian_id=eq.$civId", "GET");
 $vehicles = json_decode($vehRes, true);
 
+// Get weapons
 [$weapRes] = supabaseRequest("civilian_weapons?civilian_id=eq.$civId", "GET");
 $weapons = json_decode($weapRes, true);
 
+// Get Citations
 [$citationsRes] = supabaseRequest("citations?civilian_id=eq.$civId", "GET");
 $citations = json_decode($citationsRes, true);
 
+// Get Written Warnings
 [$warningsRes] = supabaseRequest("warnings?civilian_id=eq.$civId", "GET");
 $warnings = json_decode($warningsRes, true);
 
+// Get Arrest Reports
 [$arrestsRes] = supabaseRequest("arrest_reports?civilian_id=eq.$civId", "GET");
 $arrests = json_decode($arrestsRes, true);
 
+// Get Warrants
 [$warrantsRes] = supabaseRequest("warrants?civilian_id=eq.$civId", "GET");
 $warrants = json_decode($warrantsRes, true);
+
+// Fetch penal code data for modals
+[$titlesResp] = supabaseRequest("penal_titles", "GET");
+$penal_titles = json_decode($titlesResp, true) ?? [];
+
+[$sectionsResp] = supabaseRequest("penal_sections", "GET");
+$penal_sections = json_decode($sectionsResp, true) ?? [];
+
+$sections_by_title = [];
+foreach ($penal_titles as $title) {
+  $tid = $title['id'];
+  $sections_by_title[$tid] = array_filter($penal_sections, fn($s) => $s['title_id'] == $tid);
+}
+
+// Fetch 10-codes content for modal
+[$res] = supabaseRequest("ten_codes?id=eq.1", "GET");
+$data = json_decode($res, true);
+$content = $data[0]['content'] ?? '<p>No 10-Codes available.</p>';
 ?>
 
 <!DOCTYPE html>
@@ -83,7 +109,7 @@ $warrants = json_decode($warrantsRes, true);
   <div class="max-w-5xl mx-auto">
     <h1 class="text-4xl font-bold mb-6">Civilian Profile</h1>
 
-    <!-- Personal Info -->
+    <!-- Civilian Info -->
     <div class="bg-gray-800 rounded-xl p-6 shadow border border-gray-700 mb-8">
       <h2 class="text-xl font-semibold mb-4">Personal Details</h2>
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-gray-300">
@@ -105,7 +131,7 @@ $warrants = json_decode($warrantsRes, true);
       <?php if (!empty($licenses)): ?>
         <ul class="list-disc list-inside space-y-1 text-gray-300">
           <?php foreach ($licenses as $lic): ?>
-            <li><strong><?= $lic['license_type'] ?>:</strong> <?= $lic['status'] ?></li>
+            <li><strong><?= htmlspecialchars($lic['license_type']) ?>:</strong> <?= htmlspecialchars($lic['status']) ?></li>
           <?php endforeach; ?>
         </ul>
       <?php else: ?>
@@ -120,7 +146,7 @@ $warrants = json_decode($warrantsRes, true);
         <div class="space-y-2">
           <?php foreach ($vehicles as $v): ?>
             <div class="bg-gray-700 rounded p-3">
-              <p><strong><?= htmlspecialchars($v['make']) ?> <?= htmlspecialchars($v['model']) ?></strong></p>
+              <p><strong><?= htmlspecialchars($v['make'] . ' ' . $v['model']) ?></strong></p>
               <p>Plate: <?= htmlspecialchars($v['plate']) ?> | Color: <?= htmlspecialchars($v['color']) ?></p>
             </div>
           <?php endforeach; ?>
@@ -166,7 +192,7 @@ $warrants = json_decode($warrantsRes, true);
       <?php endif; ?>
     </div>
 
-    <!-- Warnings -->
+    <!-- Written Warnings -->
     <div class="bg-gray-800 rounded-xl p-6 shadow border border-gray-700 mt-8">
       <h2 class="text-xl font-semibold mb-4">Written Warnings</h2>
       <?php if (!empty($warnings)): ?>
@@ -222,6 +248,7 @@ $warrants = json_decode($warrantsRes, true);
         <p class="text-gray-400">No warrants found.</p>
       <?php endif; ?>
     </div>
+
   </div>
 </main>
 
