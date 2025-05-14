@@ -1,6 +1,6 @@
 <?php
 function sendDiscordWarrantLog($type, $data) {
-  $webhookUrl = 'https://discord.com/api/webhooks/1372251288817107045/voxOXT1Dn5DlNR6t7680GZl2VG8n3Cq0VFkHp3-AygLGBP8__M44rzVvFZ_aO8vz2hSL';
+  $webhookUrl = 'https://discord.com/api/webhooks/1372324426174955601/_ZSgyhJ5_AbuD21AYxnlMuNYWb44288-iWXwymAZIaEzeX8pLqiPVV0ICiaL3F4l4gAQ';
 
   if ($type === 'file') {
     $msg = "**📄 New Warrant Filed**\n"
