@@ -107,15 +107,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <label class="block mb-1 font-semibold">Violation</label>
         <select name="violation" required class="w-full px-4 py-2 bg-gray-800 rounded">
           <option value="">Select a penal code violation</option>
-          <?php foreach ($penalTitles as $title): ?>
-            <optgroup label="<?= htmlspecialchars($title['name']) ?>">
-              <?php foreach ($sectionsByTitle[$title['id']] ?? [] as $section): ?>
-                <option value="<?= htmlspecialchars($section['code'] . ' - ' . $section['description']) ?>">
-                  <?= htmlspecialchars($section['code']) ?> - <?= htmlspecialchars($section['description']) ?>
-                </option>
-              <?php endforeach; ?>
-            </optgroup>
-          <?php endforeach; ?>
+<?php foreach ($penalTitles as $title): ?>
+  <?php if (!empty($sectionsByTitle[$title['id']])): ?>
+    <optgroup label="<?= htmlspecialchars($title['name']) ?>">
+      <?php foreach ($sectionsByTitle[$title['id']] as $section): ?>
+        <option value="<?= htmlspecialchars($section['code'] . ' - ' . $section['description']) ?>">
+          <?= htmlspecialchars($section['code']) ?> - <?= htmlspecialchars($section['description']) ?>
+        </option>
+      <?php endforeach; ?>
+    </optgroup>
+  <?php endif; ?>
+<?php endforeach; ?>
         </select>
       </div>
 
