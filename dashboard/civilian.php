@@ -12,51 +12,44 @@ $username = $_SESSION['username'] ?? 'Unknown';
 $department = $_SESSION['department'] ?? 'N/A';
 $callsign = $_SESSION['callsign'] ?? 'None';
 
-$civId = $_GET['id'] ?? null;
+// SAFR or LEO dashboard link
+$dashboard_link = ($_SESSION['active_mdt'] ?? '') === 'safr' ? 'safr-mdt.php' : 'mdt.php';
 
+$civId = $_GET['id'] ?? null;
 if (!$civId) {
     echo "No civilian ID provided.";
     exit;
 }
 
-// Get civilian
+// Fetch data
 [$civRes] = supabaseRequest("civilians?id=eq.$civId", "GET");
 $civilian = json_decode($civRes, true)[0] ?? null;
-
 if (!$civilian) {
     echo "Civilian not found.";
     exit;
 }
 
-// Get licenses
 [$licRes] = supabaseRequest("civilian_licenses?civilian_id=eq.$civId", "GET");
 $licenses = json_decode($licRes, true);
 
-// Get vehicles
 [$vehRes] = supabaseRequest("civilian_vehicles?civilian_id=eq.$civId", "GET");
 $vehicles = json_decode($vehRes, true);
 
-// Get weapons
 [$weapRes] = supabaseRequest("civilian_weapons?civilian_id=eq.$civId", "GET");
 $weapons = json_decode($weapRes, true);
 
-// Get Citations
 [$citationsRes] = supabaseRequest("citations?civilian_id=eq.$civId", "GET");
 $citations = json_decode($citationsRes, true);
 
-// Get Written Warnings
 [$warningsRes] = supabaseRequest("written_warnings?civilian_id=eq.$civId", "GET");
 $warnings = json_decode($warningsRes, true);
 
-// Get Arrest Reports
 [$arrestsRes] = supabaseRequest("arrest_reports?civilian_id=eq.$civId", "GET");
 $arrests = json_decode($arrestsRes, true);
 
-// Get Warrants
 [$warrantsRes] = supabaseRequest("warrants?civilian_id=eq.$civId", "GET");
 $warrants = json_decode($warrantsRes, true);
 
-// Fetch penal code data for modals
 [$titlesResp] = supabaseRequest("penal_titles", "GET");
 $penal_titles = json_decode($titlesResp, true) ?? [];
 
@@ -65,11 +58,10 @@ $penal_sections = json_decode($sectionsResp, true) ?? [];
 
 $sections_by_title = [];
 foreach ($penal_titles as $title) {
-  $tid = $title['id'];
-  $sections_by_title[$tid] = array_filter($penal_sections, fn($s) => $s['title_id'] == $tid);
+    $tid = $title['id'];
+    $sections_by_title[$tid] = array_filter($penal_sections, fn($s) => $s['title_id'] == $tid);
 }
 
-// Fetch 10-codes content for modal
 [$res] = supabaseRequest("ten_codes?id=eq.1", "GET");
 $data = json_decode($res, true);
 $content = $data[0]['content'] ?? '<p>No 10-Codes available.</p>';
@@ -92,7 +84,6 @@ $content = $data[0]['content'] ?? '<p>No 10-Codes available.</p>';
       <a href="<?= $dashboard_link ?>" class="block px-3 py-2 rounded hover:bg-gray-700">Dashboard</a>
       <a href="name-search.php" class="block px-3 py-2 rounded hover:bg-gray-700">Name Search</a>
       <a href="plate-search.php" class="block px-3 py-2 rounded hover:bg-gray-700">Plate Search</a>
-
       <?php if (($_SESSION['active_mdt'] ?? '') !== 'safr'): ?>
         <a href="citation.php" class="block px-3 py-2 rounded hover:bg-gray-700">Citation</a>
         <a href="warning.php" class="block px-3 py-2 rounded hover:bg-gray-700">Written Warning</a>
