@@ -2,8 +2,8 @@
 session_start();
 require_once '../includes/supabase.php';
 
-if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
-  header("Location: ../index.php");
+if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'superadmin') {
+  header("Location: ../dashboard.php");
   exit;
 }
 
