@@ -155,6 +155,14 @@ foreach ($warrants as $w) {
     <?php endif; ?>
   </div>
 </main>
+<?php
+// Fix for modal compatibility
+$sections_by_title = []; 
+foreach ($penal_titles as $title) {
+  $tid = $title['id'];
+  $sections_by_title[$tid] = array_filter($penal_sections, fn($s) => $s['title_id'] == $tid);
+}
+?>
 <?php include '../partials/penal-modal.php'; ?>
 <?php include '../partials/ten-codes-modal.php'; ?>
 </body>
