@@ -15,6 +15,7 @@ $username = $_SESSION['username'] ?? 'Unknown';
 $department = $_SESSION['department'] ?? 'SACO';
 $callsign = $_SESSION['callsign'] ?? 'None';
 
+// Penal Code & 10-Codes (for modals)
 [$titlesResp] = supabaseRequest("penal_titles", "GET");
 $penal_titles = json_decode($titlesResp, true) ?? [];
 
@@ -122,6 +123,27 @@ $content = $data[0]['content'] ?? '<p>No 10-Codes available.</p>';
         </div>
       </div>
     </div>
+
+    <!-- Create Call Panel -->
+    <div class="bg-gray-800 rounded-2xl p-6 shadow-xl border border-gray-700 mt-12">
+      <h2 class="text-2xl font-semibold mb-6">Create New Call</h2>
+      <form method="POST" action="../includes/create-call.php" class="space-y-4">
+        <div>
+          <label class="block text-sm mb-1 text-gray-300">Title</label>
+          <input type="text" name="title" required class="w-full px-4 py-2 rounded bg-gray-700 border border-gray-600 focus:outline-none">
+        </div>
+        <div>
+          <label class="block text-sm mb-1 text-gray-300">Location</label>
+          <input type="text" name="location" required class="w-full px-4 py-2 rounded bg-gray-700 border border-gray-600 focus:outline-none">
+        </div>
+        <div>
+          <label class="block text-sm mb-1 text-gray-300">Description</label>
+          <textarea name="description" rows="4" required class="w-full px-4 py-2 rounded bg-gray-700 border border-gray-600 focus:outline-none"></textarea>
+        </div>
+        <button type="submit" class="bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded font-semibold">Create Call</button>
+      </form>
+    </div>
+
   </div>
 </main>
 
