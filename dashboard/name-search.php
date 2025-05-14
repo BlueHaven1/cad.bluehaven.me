@@ -60,43 +60,60 @@ $content = $data[0]['content'] ?? '<p>No 10-Codes available.</p>';
   </a>
 </aside>
 
-<!-- Main -->
+<!-- Main Content -->
 <main class="ml-64 p-8 w-full bg-gray-900 min-h-screen">
   <div class="max-w-5xl mx-auto">
     <h1 class="text-4xl font-bold mb-8">Name Search</h1>
 
-    <form method="GET" class="flex gap-4 mb-6">
-      <input type="text" name="name" placeholder="Enter name" class="flex-1 px-4 py-2 rounded bg-gray-800 text-white" value="<?= htmlspecialchars($_GET['name'] ?? '') ?>">
-      <button type="submit" class="bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded font-semibold">Search</button>
-    </form>
+    <!-- Live Search Input -->
+    <div class="flex gap-4 mb-6">
+      <input type="text" id="searchInput" placeholder="Enter name" class="flex-1 px-4 py-2 rounded bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+    </div>
 
-    <?php
-    if (!empty($_GET['name'])) {
-      $name = trim($_GET['name']);
-      $encodedName = urlencode($name);
-      [$response, $status] = supabaseRequest("civilians?name=ilike.*$encodedName*", "GET");
-      $results = json_decode($response, true);
-
-      if ($status === 200 && !empty($results)) {
-        echo '<div class="space-y-4">';
-        foreach ($results as $civ) {
-          echo '<a href="civilian.php?id=' . $civ['id'] . '" class="block bg-gray-800 p-4 rounded-lg shadow border border-gray-700 hover:bg-gray-700 transition">';
-          echo '<h2 class="text-xl font-semibold text-white">' . htmlspecialchars($civ['name']) . '</h2>';
-          echo '<p class="text-sm text-gray-400">DOB: ' . htmlspecialchars($civ['dob']) . '</p>';
-          echo '<p class="text-sm text-gray-400">Phone: ' . htmlspecialchars($civ['phone']) . '</p>';
-          echo '<p class="text-sm text-gray-400">Address: ' . htmlspecialchars($civ['address']) . '</p>';
-          echo '</a>';
-        }
-        echo '</div>';
-      } else {
-        echo '<p class="text-gray-400">No civilians found.</p>';
-      }
-    }
-    ?>
+    <!-- Results Container -->
+    <div id="resultsContainer" class="space-y-4"></div>
   </div>
 </main>
 
+<!-- Modals -->
 <?php include '../partials/penal-modal.php'; ?>
 <?php include '../partials/ten-codes-modal.php'; ?>
+
+<!-- Live Search Script -->
+<script>
+const input = document.getElementById('searchInput');
+const resultsContainer = document.getElementById('resultsContainer');
+
+input.addEventListener('input', () => {
+  const query = input.value.trim();
+
+  if (query.length < 2) {
+    resultsContainer.innerHTML = '';
+    return;
+  }
+
+  fetch(`../includes/search-civilians.php?name=${encodeURIComponent(query)}`)
+    .then(res => res.json())
+    .then(data => {
+      if (!Array.isArray(data) || data.length === 0) {
+        resultsContainer.innerHTML = '<p class="text-gray-400">No civilians found.</p>';
+        return;
+      }
+
+      resultsContainer.innerHTML = data.map(civ => `
+        <a href="civilian.php?id=${civ.id}" class="block bg-gray-800 p-4 rounded-lg shadow border border-gray-700 hover:bg-gray-700 transition">
+          <h2 class="text-xl font-semibold text-white">${civ.name}</h2>
+          <p class="text-sm text-gray-400">DOB: ${civ.dob}</p>
+          <p class="text-sm text-gray-400">Phone: ${civ.phone}</p>
+          <p class="text-sm text-gray-400">Address: ${civ.address}</p>
+        </a>
+      `).join('');
+    })
+    .catch(() => {
+      resultsContainer.innerHTML = '<p class="text-red-500">Error fetching data.</p>';
+    });
+});
+</script>
+
 </body>
 </html>
