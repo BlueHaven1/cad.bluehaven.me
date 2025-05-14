@@ -3,7 +3,7 @@ if (!function_exists('supabaseRequest')) {
   require_once '../includes/supabase.php';
 }
 
-/** PENAL CODE DATA **/
+// Fetch Penal Code Data
 [$titlesResp] = supabaseRequest("penal_titles?order=created_at.asc", "GET");
 $penal_titles = json_decode($titlesResp, true) ?? [];
 
@@ -15,13 +15,13 @@ foreach ($penal_sections as $s) {
   $sections_by_title[$s['title_id']][] = $s;
 }
 
-/** TEN-CODES DATA **/
+// Fetch 10-Codes
 [$res] = supabaseRequest("ten_codes?id=eq.1", "GET");
 $data = json_decode($res, true);
 $tenCodesContent = $data[0]['content'] ?? '<p>No 10-Codes available.</p>';
 ?>
 
-<!-- Floating Buttons -->
+<!-- Buttons -->
 <button onclick="openPenalModal()" class="fixed bottom-6 right-6 bg-gray-800 hover:bg-gray-700 text-white text-sm px-4 py-2 rounded shadow-lg z-40">
   Penal Code
 </button>
@@ -30,9 +30,9 @@ $tenCodesContent = $data[0]['content'] ?? '<p>No 10-Codes available.</p>';
   10-Codes
 </button>
 
-<!-- Penal Modal -->
+<!-- Penal Code Modal -->
 <div id="penalModal" class="fixed inset-0 hidden flex items-center justify-center bg-black bg-opacity-50 z-50">
-  <div class="bg-gray-900 text-white w-full max-w-3xl max-h-[80vh] rounded-lg p-6 overflow-y-auto transform scale-95 opacity-0 transition-all duration-300 modal-inner">
+  <div class="modal-inner bg-gray-900 text-white w-full max-w-3xl max-h-[80vh] rounded-lg p-6 overflow-y-auto transform scale-95 opacity-0 transition-all duration-300">
     <div class="flex justify-between items-center mb-4">
       <h2 class="text-xl font-bold">Penal Code</h2>
       <button onclick="closePenalModal()" class="text-gray-400 hover:text-white text-2xl leading-none">&times;</button>
@@ -70,9 +70,9 @@ $tenCodesContent = $data[0]['content'] ?? '<p>No 10-Codes available.</p>';
   </div>
 </div>
 
-<!-- Ten Codes Modal -->
+<!-- 10-Codes Modal -->
 <div id="tenModal" class="fixed inset-0 hidden flex items-center justify-center bg-black bg-opacity-50 z-50">
-  <div class="bg-gray-900 text-white w-full max-w-3xl max-h-[80vh] rounded-lg p-6 overflow-y-auto transform scale-95 opacity-0 transition-all duration-300 modal-inner">
+  <div class="modal-inner bg-gray-900 text-white w-full max-w-3xl max-h-[80vh] rounded-lg p-6 overflow-y-auto transform scale-95 opacity-0 transition-all duration-300">
     <div class="flex justify-between items-center mb-4">
       <h2 class="text-xl font-bold">10-Codes</h2>
       <button onclick="closeTenModal()" class="text-gray-400 hover:text-white text-2xl leading-none">&times;</button>
@@ -81,11 +81,11 @@ $tenCodesContent = $data[0]['content'] ?? '<p>No 10-Codes available.</p>';
   </div>
 </div>
 
-<!-- Modal Scripts -->
+<!-- Scripts -->
 <script>
 function openPenalModal() {
   const modal = document.getElementById('penalModal');
-  const inner = modal.querySelector('.modal-inner');
+  const inner = document.querySelector('#penalModal .modal-inner');
   modal.classList.remove('hidden');
   modal.classList.add('flex');
   setTimeout(() => {
@@ -96,7 +96,7 @@ function openPenalModal() {
 
 function closePenalModal() {
   const modal = document.getElementById('penalModal');
-  const inner = modal.querySelector('.modal-inner');
+  const inner = document.querySelector('#penalModal .modal-inner');
   inner.classList.remove('scale-100', 'opacity-100');
   inner.classList.add('scale-95', 'opacity-0');
   setTimeout(() => {
@@ -119,7 +119,7 @@ function toggleSection(id, button) {
 
 function openTenModal() {
   const modal = document.getElementById('tenModal');
-  const inner = modal.querySelector('.modal-inner');
+  const inner = document.querySelector('#tenModal .modal-inner');
   modal.classList.remove('hidden');
   modal.classList.add('flex');
   setTimeout(() => {
@@ -130,7 +130,7 @@ function openTenModal() {
 
 function closeTenModal() {
   const modal = document.getElementById('tenModal');
-  const inner = modal.querySelector('.modal-inner');
+  const inner = document.querySelector('#tenModal .modal-inner');
   inner.classList.remove('scale-100', 'opacity-100');
   inner.classList.add('scale-95', 'opacity-0');
   setTimeout(() => {
