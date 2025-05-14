@@ -36,6 +36,37 @@ $content = $data[0]['content'] ?? '';
   <title>Edit 10-Codes</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+  <style>
+  .ql-toolbar.ql-snow {
+    background-color: #1f2937; /* Tailwind: bg-gray-800 */
+    border-color: #374151;     /* Tailwind: border-gray-700 */
+    color: white;
+  }
+
+  .ql-toolbar .ql-picker-label, .ql-toolbar .ql-picker-options, .ql-toolbar button {
+    color: white !important;
+    fill: white !important;
+  }
+
+  .ql-container.ql-snow {
+    background-color: #1f2937; /* Editor background */
+    color: white;              /* Text inside editor */
+    border-color: #374151;
+    min-height: 300px;
+  }
+
+  .ql-editor {
+    color: white;
+  }
+
+  .ql-editor a {
+    color: #60a5fa; /* Tailwind: text-blue-400 */
+  }
+
+  .ql-editor strong {
+    color: #ffffff;
+  }
+</style>
 </head>
 <body class="bg-gray-900 text-white p-6 min-h-screen">
   <div class="max-w-4xl mx-auto">
