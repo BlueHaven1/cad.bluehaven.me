@@ -11,6 +11,24 @@ $status = $_SESSION['status'] ?? '10-7';
 $username = $_SESSION['username'] ?? 'Unknown';
 $department = $_SESSION['department'] ?? 'N/A';
 $callsign = $_SESSION['callsign'] ?? 'None';
+
+// Preload Penal Code data for modal
+[$titlesResp] = supabaseRequest("penal_titles", "GET");
+$penal_titles = json_decode($titlesResp, true) ?? [];
+
+[$sectionsResp] = supabaseRequest("penal_sections", "GET");
+$penal_sections = json_decode($sectionsResp, true) ?? [];
+
+$sections_by_title = [];
+foreach ($penal_titles as $title) {
+  $tid = $title['id'];
+  $sections_by_title[$tid] = array_filter($penal_sections, fn($s) => $s['title_id'] == $tid);
+}
+
+// Preload 10-Codes content
+[$res] = supabaseRequest("ten_codes?id=eq.1", "GET");
+$data = json_decode($res, true);
+$content = $data[0]['content'] ?? '<p>No 10-Codes available.</p>';
 ?>
 
 <!DOCTYPE html>
@@ -56,9 +74,9 @@ $callsign = $_SESSION['callsign'] ?? 'None';
 
     <?php
     if (!empty($_GET['name'])) {
-$name = trim($_GET['name']);
-$encodedName = urlencode($name); // encode spaces and special chars
-[$response, $status] = supabaseRequest("civilians?name=ilike.*$encodedName*", "GET");
+      $name = trim($_GET['name']);
+      $encodedName = urlencode($name);
+      [$response, $status] = supabaseRequest("civilians?name=ilike.*$encodedName*", "GET");
       $results = json_decode($response, true);
 
       if ($status === 200 && !empty($results)) {
@@ -79,6 +97,7 @@ $encodedName = urlencode($name); // encode spaces and special chars
     ?>
   </div>
 </main>
+
 <?php include '../partials/penal-modal.php'; ?>
 <?php include '../partials/ten-codes-modal.php'; ?>
 </body>
