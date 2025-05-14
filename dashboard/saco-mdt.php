@@ -8,7 +8,6 @@ if (!isset($_SESSION['user_id']) || !isset($_SESSION['mdt_active']) || ($_SESSIO
     exit;
 }
 
-// Set MDT context
 $_SESSION['active_mdt'] = 'saco';
 
 $status = $_SESSION['status'] ?? '10-7';
@@ -16,7 +15,6 @@ $username = $_SESSION['username'] ?? 'Unknown';
 $department = $_SESSION['department'] ?? 'SACO';
 $callsign = $_SESSION['callsign'] ?? 'None';
 
-// Penal Code & 10-Codes (for modals)
 [$titlesResp] = supabaseRequest("penal_titles", "GET");
 $penal_titles = json_decode($titlesResp, true) ?? [];
 
@@ -40,6 +38,15 @@ $content = $data[0]['content'] ?? '<p>No 10-Codes available.</p>';
   <meta charset="UTF-8">
   <title>SACO Dispatcher MDT</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .scrollbar::-webkit-scrollbar {
+      width: 6px;
+    }
+    .scrollbar::-webkit-scrollbar-thumb {
+      background: #4B5563;
+      border-radius: 4px;
+    }
+  </style>
 </head>
 <body class="bg-gray-900 text-white flex min-h-screen">
 
@@ -99,18 +106,20 @@ $content = $data[0]['content'] ?? '<p>No 10-Codes available.</p>';
     <div class="bg-gray-800 rounded-2xl p-6 shadow-xl border border-gray-700 mt-12">
       <h2 class="text-2xl font-semibold mb-6">Active Units Overview</h2>
       <div class="overflow-x-auto">
-        <table class="w-full text-left text-sm text-gray-300">
-          <thead>
-            <tr class="border-b border-gray-700 text-gray-400">
-              <th class="px-4 py-2">Callsign</th>
-              <th class="px-4 py-2">Department</th>
-              <th class="px-4 py-2">Status</th>
-            </tr>
-          </thead>
-          <tbody id="unitsContainer">
-            <tr><td colspan="3" class="px-4 py-3 text-gray-400">Loading units...</td></tr>
-          </tbody>
-        </table>
+        <div class="max-h-96 overflow-y-auto scrollbar">
+          <table class="w-full text-left text-sm text-gray-300">
+            <thead class="sticky top-0 bg-gray-800 z-10">
+              <tr class="border-b border-gray-700 text-gray-400">
+                <th class="px-4 py-2">Callsign</th>
+                <th class="px-4 py-2">Department</th>
+                <th class="px-4 py-2">Status</th>
+              </tr>
+            </thead>
+            <tbody id="unitsContainer">
+              <tr><td colspan="3" class="px-4 py-3 text-gray-400">Loading units...</td></tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   </div>
