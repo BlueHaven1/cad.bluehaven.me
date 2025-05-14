@@ -1,6 +1,7 @@
 <?php
 session_start();
 require_once '../includes/supabase.php';
+require_once '../includes/discord-webhook.php';
 
 if (!isset($_SESSION['user_id']) || !isset($_SESSION['mdt_active'])) {
   header("Location: ../patrol.php");
@@ -52,12 +53,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     [$resp, $code] = supabaseRequest("warrants", "POST", [$body]);
 
     $success = $code === 201;
-    if (!$success) $error = 'Failed to file warrant.';
+
+    if ($success) {
+      [$civResp] = supabaseRequest("civilians?id=eq.$civilian_id", "GET");
+      $civilian = json_decode($civResp, true)[0] ?? ['name' => 'Unknown', 'dob' => 'N/A'];
+
+      sendDiscordWarrantLog('file', [
+        'officer' => $username,
+        'department' => $department,
+        'civilian' => $civilian['name'],
+        'dob' => $civilian['dob'],
+        'violation' => $violation,
+        'fine' => $fine ?? 0,
+        'jail_time' => $jail_time ?? 0,
+        'location' => $location,
+        'reason' => $reason
+      ]);
+    } else {
+      $error = 'Failed to file warrant.';
+    }
   } else {
     $error = 'Civilian, violation, department, and signature are required.';
   }
 }
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
