@@ -13,32 +13,40 @@ $department = $_SESSION['department'] ?? 'N/A';
 $callsign = $_SESSION['callsign'] ?? 'None';
 
 $civId = $_GET['id'] ?? null;
-
 if (!$civId) {
     echo "No civilian ID provided.";
     exit;
 }
 
-// Get civilian
+// Fetch civilian data
 [$civRes] = supabaseRequest("civilians?id=eq.$civId", "GET");
 $civilian = json_decode($civRes, true)[0] ?? null;
-
 if (!$civilian) {
     echo "Civilian not found.";
     exit;
 }
 
-// Get licenses
+// Fetch associated data
 [$licRes] = supabaseRequest("civilian_licenses?civilian_id=eq.$civId", "GET");
 $licenses = json_decode($licRes, true);
 
-// Get vehicles
 [$vehRes] = supabaseRequest("civilian_vehicles?civilian_id=eq.$civId", "GET");
 $vehicles = json_decode($vehRes, true);
 
-// Get weapons
 [$weapRes] = supabaseRequest("civilian_weapons?civilian_id=eq.$civId", "GET");
 $weapons = json_decode($weapRes, true);
+
+[$citationsRes] = supabaseRequest("citations?civilian_id=eq.$civId", "GET");
+$citations = json_decode($citationsRes, true);
+
+[$warningsRes] = supabaseRequest("warnings?civilian_id=eq.$civId", "GET");
+$warnings = json_decode($warningsRes, true);
+
+[$arrestsRes] = supabaseRequest("arrest_reports?civilian_id=eq.$civId", "GET");
+$arrests = json_decode($arrestsRes, true);
+
+[$warrantsRes] = supabaseRequest("warrants?civilian_id=eq.$civId", "GET");
+$warrants = json_decode($warrantsRes, true);
 ?>
 
 <!DOCTYPE html>
@@ -75,7 +83,7 @@ $weapons = json_decode($weapRes, true);
   <div class="max-w-5xl mx-auto">
     <h1 class="text-4xl font-bold mb-6">Civilian Profile</h1>
 
-    <!-- Civilian Info -->
+    <!-- Personal Info -->
     <div class="bg-gray-800 rounded-xl p-6 shadow border border-gray-700 mb-8">
       <h2 class="text-xl font-semibold mb-4">Personal Details</h2>
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-gray-300">
@@ -123,7 +131,7 @@ $weapons = json_decode($weapRes, true);
     </div>
 
     <!-- Weapons -->
-    <div class="bg-gray-800 rounded-xl p-6 shadow border border-gray-700">
+    <div class="bg-gray-800 rounded-xl p-6 shadow border border-gray-700 mb-8">
       <h2 class="text-xl font-semibold mb-4">Weapons</h2>
       <?php if (!empty($weapons)): ?>
         <div class="space-y-2">
@@ -138,8 +146,85 @@ $weapons = json_decode($weapRes, true);
         <p class="text-gray-400">No weapons found.</p>
       <?php endif; ?>
     </div>
+
+    <!-- Citations -->
+    <div class="bg-gray-800 rounded-xl p-6 shadow border border-gray-700 mt-8">
+      <h2 class="text-xl font-semibold mb-4">Citations</h2>
+      <?php if (!empty($citations)): ?>
+        <div class="space-y-2">
+          <?php foreach ($citations as $c): ?>
+            <div class="bg-gray-700 rounded p-3">
+              <p><strong>Violation:</strong> <?= htmlspecialchars($c['violation']) ?></p>
+              <p><strong>Fine:</strong> $<?= number_format($c['fine']) ?></p>
+              <p><strong>Location:</strong> <?= htmlspecialchars($c['location']) ?></p>
+              <p><strong>Officer:</strong> <?= htmlspecialchars($c['signature']) ?></p>
+            </div>
+          <?php endforeach; ?>
+        </div>
+      <?php else: ?>
+        <p class="text-gray-400">No citations found.</p>
+      <?php endif; ?>
+    </div>
+
+    <!-- Warnings -->
+    <div class="bg-gray-800 rounded-xl p-6 shadow border border-gray-700 mt-8">
+      <h2 class="text-xl font-semibold mb-4">Written Warnings</h2>
+      <?php if (!empty($warnings)): ?>
+        <div class="space-y-2">
+          <?php foreach ($warnings as $w): ?>
+            <div class="bg-gray-700 rounded p-3">
+              <p><strong>Reason:</strong> <?= htmlspecialchars($w['reason']) ?></p>
+              <p><strong>Location:</strong> <?= htmlspecialchars($w['location']) ?></p>
+              <p><strong>Officer:</strong> <?= htmlspecialchars($w['signature']) ?></p>
+            </div>
+          <?php endforeach; ?>
+        </div>
+      <?php else: ?>
+        <p class="text-gray-400">No warnings found.</p>
+      <?php endif; ?>
+    </div>
+
+    <!-- Arrest Reports -->
+    <div class="bg-gray-800 rounded-xl p-6 shadow border border-gray-700 mt-8">
+      <h2 class="text-xl font-semibold mb-4">Arrest Reports</h2>
+      <?php if (!empty($arrests)): ?>
+        <div class="space-y-2">
+          <?php foreach ($arrests as $a): ?>
+            <div class="bg-gray-700 rounded p-3">
+              <p><strong>Charges:</strong> <?= htmlspecialchars($a['charges']) ?></p>
+              <p><strong>Location:</strong> <?= htmlspecialchars($a['location']) ?></p>
+              <p><strong>Officer:</strong> <?= htmlspecialchars($a['signature']) ?></p>
+            </div>
+          <?php endforeach; ?>
+        </div>
+      <?php else: ?>
+        <p class="text-gray-400">No arrest reports found.</p>
+      <?php endif; ?>
+    </div>
+
+    <!-- Warrants -->
+    <div class="bg-gray-800 rounded-xl p-6 shadow border border-gray-700 mt-8">
+      <h2 class="text-xl font-semibold mb-4">Warrants</h2>
+      <?php if (!empty($warrants)): ?>
+        <div class="space-y-2">
+          <?php foreach ($warrants as $w): ?>
+            <div class="bg-gray-700 rounded p-3">
+              <p><strong>Violation:</strong> <?= htmlspecialchars($w['violation']) ?></p>
+              <p><strong>Fine:</strong> <?= $w['fine'] ? '$' . number_format($w['fine']) : 'N/A' ?></p>
+              <p><strong>Jail Time:</strong> <?= $w['jail_time'] ? $w['jail_time'] . ' months' : 'N/A' ?></p>
+              <p><strong>Location:</strong> <?= htmlspecialchars($w['location']) ?></p>
+              <p><strong>Status:</strong> <?= !empty($w['is_served']) ? '<span class="text-green-400">Served</span>' : '<span class="text-yellow-400">Active</span>' ?></p>
+              <p><strong>Officer:</strong> <?= htmlspecialchars($w['signature']) ?></p>
+            </div>
+          <?php endforeach; ?>
+        </div>
+      <?php else: ?>
+        <p class="text-gray-400">No warrants found.</p>
+      <?php endif; ?>
+    </div>
   </div>
 </main>
+
 <?php include '../partials/penal-modal.php'; ?>
 <?php include '../partials/ten-codes-modal.php'; ?>
 </body>
