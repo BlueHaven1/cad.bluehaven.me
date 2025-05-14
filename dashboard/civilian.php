@@ -1,5 +1,6 @@
 <?php
 session_start();
+$_SESSION['active_mdt'] = 'safr';
 require_once '../includes/supabase.php';
 
 if (!isset($_SESSION['user_id']) || !isset($_SESSION['mdt_active'])) {
