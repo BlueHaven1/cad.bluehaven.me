@@ -35,8 +35,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   $signature = $_POST['signature'] ?? null;
   $fine = $_POST['fine'] ?? null;
   $jail_time = $_POST['jail_time'] ?? null;
+  $department_id = $_SESSION['department_id'] ?? null;
 
-  if ($civilian_id && $violation && $signature) {
+  if ($civilian_id && $violation && $signature && $department_id) {
     $body = [
       'civilian_id' => (int)$civilian_id,
       'officer_id' => $officerId,
@@ -45,14 +46,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       'jail_time' => $jail_time !== '' ? (int)$jail_time : null,
       'reason' => $reason,
       'location' => $location,
-      'signature' => $signature
+      'signature' => $signature,
+      'department_id' => $department_id
     ];
     [$resp, $code] = supabaseRequest("warrants", "POST", [$body]);
 
     $success = $code === 201;
     if (!$success) $error = 'Failed to file warrant.';
   } else {
-    $error = 'Civilian, violation, and signature are required.';
+    $error = 'Civilian, violation, department, and signature are required.';
   }
 }
 ?>

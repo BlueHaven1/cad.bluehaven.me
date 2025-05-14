@@ -33,11 +33,12 @@ $perPage = 5;
 $from = ($page - 1) * $perPage;
 
 // Fetch active warrants with pagination
-[$warrantResp] = supabaseRequest("warrants?is_served=is.false&limit=$perPage&offset=$from&order=served_at.desc", "GET");
+$currentDept = $_SESSION['department_id'];
+
+[$warrantResp] = supabaseRequest("warrants?is_served=is.false&department_id=eq.$currentDept&limit=$perPage&offset=$from&order=served_at.desc", "GET");
 $warrants = json_decode($warrantResp, true) ?? [];
 
-// Total count
-[$countResp] = supabaseRequest("warrants?is_served=is.false&select=id", "GET");
+[$countResp] = supabaseRequest("warrants?is_served=is.false&department_id=eq.$currentDept&select=id", "GET");
 $totalWarrants = count(json_decode($countResp, true));
 
 // Fetch civilians and officers
