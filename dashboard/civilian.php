@@ -199,7 +199,8 @@ $content = $data[0]['content'] ?? '<p>No 10-Codes available.</p>';
     <div class="space-y-2">
       <?php foreach ($warnings as $w): ?>
         <div class="bg-gray-700 rounded p-3">
-          <p><strong>Reason:</strong> <?= htmlspecialchars($w['reason'] ?? 'N/A') ?></p>
+          <p><strong>Reason:</strong> <?= htmlspecialchars($w['violation'] ?? 'N/A') ?></p>
+          <p><strong>Warning:</strong> <?= htmlspecialchars($w['notes'] ?? 'No details provided.') ?></p>
           <p><strong>Location:</strong> <?= htmlspecialchars($w['location'] ?? 'N/A') ?></p>
           <p><strong>Officer:</strong> <?= htmlspecialchars($w['signature'] ?? 'Unknown') ?></p>
           <p><strong>Date:</strong> <?= htmlspecialchars($w['created_at'] ?? 'N/A') ?></p>
@@ -210,6 +211,7 @@ $content = $data[0]['content'] ?? '<p>No 10-Codes available.</p>';
     <p class="text-gray-400">No written warnings found.</p>
   <?php endif; ?>
 </div>
+
 
     <!-- Arrest Reports -->
     <div class="bg-gray-800 rounded-xl p-6 shadow border border-gray-700 mt-8">
