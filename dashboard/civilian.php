@@ -192,23 +192,24 @@ $content = $data[0]['content'] ?? '<p>No 10-Codes available.</p>';
       <?php endif; ?>
     </div>
 
-    <!-- Written Warnings -->
-    <div class="bg-gray-800 rounded-xl p-6 shadow border border-gray-700 mt-8">
-      <h2 class="text-xl font-semibold mb-4">Written Warnings</h2>
-      <?php if (!empty($warnings)): ?>
-        <div class="space-y-2">
-          <?php foreach ($warnings as $w): ?>
-            <div class="bg-gray-700 rounded p-3">
-              <p><strong>Reason:</strong> <?= htmlspecialchars($w['reason']) ?></p>
-              <p><strong>Location:</strong> <?= htmlspecialchars($w['location']) ?></p>
-              <p><strong>Officer:</strong> <?= htmlspecialchars($w['signature']) ?></p>
-            </div>
-          <?php endforeach; ?>
+<!-- Written Warnings -->
+<div class="bg-gray-800 rounded-xl p-6 shadow border border-gray-700 mt-8">
+  <h2 class="text-xl font-semibold mb-4">Written Warnings</h2>
+  <?php if (!empty($warnings)): ?>
+    <div class="space-y-2">
+      <?php foreach ($warnings as $w): ?>
+        <div class="bg-gray-700 rounded p-3">
+          <p><strong>Reason:</strong> <?= htmlspecialchars($w['reason'] ?? 'N/A') ?></p>
+          <p><strong>Location:</strong> <?= htmlspecialchars($w['location'] ?? 'N/A') ?></p>
+          <p><strong>Officer:</strong> <?= htmlspecialchars($w['signature'] ?? 'Unknown') ?></p>
+          <p><strong>Date:</strong> <?= htmlspecialchars($w['created_at'] ?? 'N/A') ?></p>
         </div>
-      <?php else: ?>
-        <p class="text-gray-400">No warnings found.</p>
-      <?php endif; ?>
+      <?php endforeach; ?>
     </div>
+  <?php else: ?>
+    <p class="text-gray-400">No written warnings found.</p>
+  <?php endif; ?>
+</div>
 
     <!-- Arrest Reports -->
     <div class="bg-gray-800 rounded-xl p-6 shadow border border-gray-700 mt-8">
