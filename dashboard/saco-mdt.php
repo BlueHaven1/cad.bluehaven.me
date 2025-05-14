@@ -143,17 +143,20 @@ $content = $data[0]['content'] ?? '<p>No 10-Codes available.</p>';
           return;
         }
 
-        container.innerHTML = units.map(unit => `
-          <div class="bg-gray-700 rounded-xl p-4 border border-gray-600">
-            <p><strong>${unit.callsign}</strong></p>
-            <p class="text-sm text-gray-400">${unit.department}</p>
-            <p class="text-sm font-semibold mt-1 ${
-              unit.status === '10-8' ? 'text-green-400' :
-              unit.status === '10-6' ? 'text-yellow-400' :
-              'text-red-400'
-            }">${unit.status}</p>
-          </div>
-        `).join('');
+container.innerHTML = units.map(unit => {
+  const statusColor =
+    unit.status === '10-8' ? 'text-green-400' :
+    unit.status === '10-6' ? 'text-yellow-400' :
+    unit.status === '10-7' ? 'text-red-400' : 'text-white';
+
+  return `
+    <div class="bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-sm flex flex-col gap-1">
+      <div class="text-base font-semibold text-white">${unit.callsign}</div>
+      <div class="text-gray-400">${unit.department}</div>
+      <div class="font-medium ${statusColor}">${unit.status}</div>
+    </div>
+  `;
+}).join('');
       })
       .catch(() => {
         document.getElementById('unitsContainer').innerHTML = '<p class="text-red-500 col-span-full">Failed to load units.</p>';
