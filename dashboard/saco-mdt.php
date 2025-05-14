@@ -161,7 +161,7 @@ $content = $data[0]['content'] ?? '<p>No 10-Codes available.</p>';
   }
 
   loadUnits();
-  setInterval(loadUnits, 10000);
+  setInterval(loadUnits, 3000);
 </script>
 
 <?php include '../partials/penal-modal.php'; ?>
