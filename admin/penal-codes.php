@@ -85,8 +85,11 @@ if (!empty($title_ids_query)) {
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-900 text-white min-h-screen flex">
-    <?php include '../includes/header.php'; ?>
 <?php include '../includes/adminsidebar.php'; ?>
+
+  <div class="flex-1 flex flex-col">
+    <?php include '../includes/header.php'; ?>
+    
 <div class="flex-1 p-8">
   <h1 class="text-3xl font-bold mb-8">Penal Code Management</h1>
 
