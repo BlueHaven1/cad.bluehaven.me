@@ -12,7 +12,9 @@ $username = $_SESSION['username'] ?? 'Unknown';
 $department = $_SESSION['department'] ?? 'N/A';
 $callsign = $_SESSION['callsign'] ?? 'None';
 
-// Preload penal code data for modals
+$dashboard_link = ($_SESSION['active_mdt'] ?? '') === 'safr' ? 'safr-mdt.php' : 'mdt.php';
+
+// Preload Penal Code data for modal
 [$titlesResp] = supabaseRequest("penal_titles", "GET");
 $penal_titles = json_decode($titlesResp, true) ?? [];
 
@@ -35,7 +37,7 @@ $content = $data[0]['content'] ?? '<p>No 10-Codes available.</p>';
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>SAFR MDT - San Andreas CAD</title>
+  <title>Name Search - MDT</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-900 text-white flex min-h-screen">
@@ -43,10 +45,10 @@ $content = $data[0]['content'] ?? '<p>No 10-Codes available.</p>';
 <!-- Sidebar -->
 <aside class="w-64 bg-gray-800 p-4 flex flex-col justify-between fixed h-full">
   <div>
-    <h2 class="text-2xl font-bold mb-6">SAFR MDT</h2>
+    <h2 class="text-2xl font-bold mb-6">MDT</h2>
     <nav class="space-y-2">
-      <a href="safr-mdt.php" class="block px-3 py-2 rounded hover:bg-gray-700 bg-gray-700">Dashboard</a>
-      <a href="name-search.php" class="block px-3 py-2 rounded hover:bg-gray-700">Name Search</a>
+      <a href="<?= $dashboard_link ?>" class="block px-3 py-2 rounded hover:bg-gray-700">Dashboard</a>
+      <a href="name-search.php" class="block px-3 py-2 rounded bg-gray-700">Name Search</a>
       <a href="plate-search.php" class="block px-3 py-2 rounded hover:bg-gray-700">Plate Search</a>
     </nav>
   </div>
@@ -55,86 +57,71 @@ $content = $data[0]['content'] ?? '<p>No 10-Codes available.</p>';
   </a>
 </aside>
 
-
 <!-- Main Content -->
 <main class="ml-64 p-8 w-full bg-gray-900 min-h-screen">
-  <div class="max-w-7xl mx-auto">
-    <h1 class="text-4xl font-bold mb-8">SAFR MDT Dashboard</h1>
+  <div class="max-w-5xl mx-auto">
+    <h1 class="text-4xl font-bold mb-8">Name Search</h1>
 
-    <!-- Unit Info Card -->
-    <div class="bg-gray-800 rounded-2xl p-8 shadow-xl border border-gray-700">
-      <h2 class="text-2xl font-semibold mb-6 text-white">Unit Information</h2>
-
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 text-gray-300">
-        <div>
-          <p class="text-sm text-gray-400 uppercase mb-1">Username</p>
-          <p class="text-xl font-semibold"><?= htmlspecialchars($username) ?></p>
-        </div>
-
-        <div>
-          <p class="text-sm text-gray-400 uppercase mb-1">Department</p>
-          <p class="text-xl font-semibold"><?= htmlspecialchars($department) ?></p>
-        </div>
-
-        <div>
-          <p class="text-sm text-gray-400 uppercase mb-1">Callsign</p>
-          <p class="text-xl font-semibold"><?= htmlspecialchars($callsign) ?></p>
-        </div>
-
-        <div class="col-span-1 sm:col-span-2 lg:col-span-3">
-          <p class="text-sm text-gray-400 uppercase mb-1">Status</p>
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between">
-            <p id="currentStatus" class="text-xl font-semibold text-green-400 mb-4 sm:mb-0"><?= htmlspecialchars($status) ?></p>
-            <div class="flex flex-wrap gap-2 mt-2">
-              <?php if ($status === '10-7'): ?>
-                <button onclick="updateStatus('10-8')" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded text-sm">
-                  Go 10-8
-                </button>
-              <?php else: ?>
-                <?php
-                $allStatuses = ['10-8', '10-6', '10-15', '10-23', '10-97', '10-7'];
-                foreach ($allStatuses as $opt):
-                  $isActive = $status === $opt;
-                  $classes = $isActive
-                    ? 'bg-green-600 text-white ring-2 ring-green-400'
-                    : 'bg-gray-700 hover:bg-gray-600 text-white';
-                ?>
-                  <button onclick="updateStatus('<?= $opt ?>')" class="<?= $classes ?> px-4 py-2 rounded text-sm"><?= $opt ?></button>
-                <?php endforeach; ?>
-              <?php endif; ?>
-            </div>
-          </div>
-        </div>
-      </div>
+    <!-- Live Search Input -->
+    <div class="flex gap-4 mb-6">
+      <input type="text" id="searchInput" placeholder="Enter name" class="flex-1 px-4 py-2 rounded bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
     </div>
 
-    <div class="mt-12 text-center text-gray-500 text-sm">
-      Add more SAFR MDT tools. Noted
-    </div>
+    <!-- Results Container -->
+    <div id="resultsContainer" class="space-y-4"></div>
   </div>
 </main>
 
-<!-- AJAX Script -->
-<script>
-  function updateStatus(status) {
-    fetch('update-status.php', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-      body: 'status=' + encodeURIComponent(status)
-    })
-    .then(res => res.json())
-    .then(data => {
-      if (data.success) {
-        document.getElementById('currentStatus').textContent = data.newStatus;
-        location.reload();
-      } else {
-        alert('Failed to update status.');
-      }
-    });
-  }
-</script>
-
+<!-- Modals -->
 <?php include '../partials/penal-modal.php'; ?>
 <?php include '../partials/ten-codes-modal.php'; ?>
+
+<!-- Live Search Script with Animation -->
+<script>
+const input = document.getElementById('searchInput');
+const resultsContainer = document.getElementById('resultsContainer');
+
+input.addEventListener('input', () => {
+  const query = input.value.trim();
+
+  if (query.length < 2) {
+    resultsContainer.innerHTML = '';
+    return;
+  }
+
+  fetch(`../includes/search-civilians.php?name=${encodeURIComponent(query)}`)
+    .then(res => res.json())
+    .then(data => {
+      if (!Array.isArray(data) || data.length === 0) {
+        resultsContainer.innerHTML = '<p class="text-gray-400">No civilians found.</p>';
+        return;
+      }
+
+      resultsContainer.innerHTML = data.map(civ => `
+        <a href="civilian.php?id=${civ.id}" 
+           class="result-card block bg-gray-800 p-4 rounded-lg shadow border border-gray-700 hover:bg-gray-700 transform opacity-0 translate-y-2">
+          <h2 class="text-xl font-semibold text-white">${civ.name}</h2>
+          <p class="text-sm text-gray-400">DOB: ${civ.dob}</p>
+          <p class="text-sm text-gray-400">Phone: ${civ.phone}</p>
+          <p class="text-sm text-gray-400">Address: ${civ.address}</p>
+        </a>
+      `).join('');
+
+      // Animate results in sequence
+      setTimeout(() => {
+        document.querySelectorAll('.result-card').forEach((card, index) => {
+          setTimeout(() => {
+            card.classList.remove('opacity-0', 'translate-y-2');
+            card.classList.add('opacity-100', 'translate-y-0', 'transition-all', 'duration-300');
+          }, index * 40);
+        });
+      }, 10);
+    })
+    .catch(() => {
+      resultsContainer.innerHTML = '<p class="text-red-500">Error fetching data.</p>';
+    });
+});
+</script>
+
 </body>
 </html>
