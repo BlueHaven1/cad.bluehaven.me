@@ -16,23 +16,17 @@ $officerId = $_SESSION['user_id'];
 $success = false;
 $error = '';
 
-// Fetch penal titles
+// Fetch all penal titles and sections at once
 [$titlesResp, $titlesCode] = supabaseRequest("penal_titles", "GET");
-$penalTitlesRaw = $titlesCode === 200 ? json_decode($titlesResp, true) : [];
+$penalTitles = $titlesCode === 200 ? json_decode($titlesResp, true) : [];
 
-$penalTitles = [];
+[$sectionsResp, $sectionsCode] = supabaseRequest("penal_sections", "GET");
+$allSections = $sectionsCode === 200 ? json_decode($sectionsResp, true) : [];
+
 $sectionsByTitle = [];
-
-if (!empty($penalTitlesRaw)) {
-    foreach ($penalTitlesRaw as $title) {
-        $titleId = $title['id'];
-        [$sectionsResp, $sectionsCode] = supabaseRequest("penal_sections?title_id=eq.$titleId", "GET");
-        $sections = $sectionsCode === 200 ? json_decode($sectionsResp, true) : [];
-        if (!empty($sections)) {
-            $penalTitles[] = $title;
-            $sectionsByTitle[$titleId] = $sections;
-        }
-    }
+foreach ($allSections as $section) {
+  $tid = $section['title_id'];
+  $sectionsByTitle[$tid][] = $section;
 }
 
 // Form submission
@@ -104,7 +98,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <form method="POST" class="space-y-6">
       <div>
         <label class="block mb-1 font-semibold">Search Civilian</label>
-        <input type="text" id="civilian_display" oninput="searchCivilians(this.value)" placeholder="Type to search..." class="w-full px-4 py-2 bg-gray-800 rounded" autocomplete="off">
+        <input type="text" id="civilian_display" oninput="debouncedSearchCivilians(this.value)" placeholder="Type to search..." class="w-full px-4 py-2 bg-gray-800 rounded" autocomplete="off">
         <input type="hidden" name="civilian_id" id="civilian_id">
         <div id="results" class="bg-gray-800 border border-gray-600 rounded mt-1 max-h-40 overflow-y-auto"></div>
       </div>
@@ -115,7 +109,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           <option value="">Select a penal code violation</option>
           <?php foreach ($penalTitles as $title): ?>
             <optgroup label="<?= htmlspecialchars($title['name']) ?>">
-              <?php foreach ($sectionsByTitle[$title['id']] as $section): ?>
+              <?php foreach ($sectionsByTitle[$title['id']] ?? [] as $section): ?>
                 <option value="<?= htmlspecialchars($section['code'] . ' - ' . $section['description']) ?>">
                   <?= htmlspecialchars($section['code']) ?> - <?= htmlspecialchars($section['description']) ?>
                 </option>
@@ -132,7 +126,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
       <div>
         <label class="block mb-1 font-semibold">Notes</label>
-        <textarea name="notes" class="w-full px-4 py-2 bg-gray-800 rounded"></textarea>
+        <textarea name="notes" class="w-full px-4 py-2 bg-gray-800 rounded" placeholder="Enter the reason or context of the warning here..."></textarea>
       </div>
 
       <div>
@@ -146,8 +140,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </main>
 
 <script>
-  async function searchCivilians(query) {
+  let searchTimeout;
+  function debouncedSearchCivilians(query) {
+    clearTimeout(searchTimeout);
     if (query.length < 2) return;
+    searchTimeout = setTimeout(() => searchCivilians(query), 300);
+  }
+
+  async function searchCivilians(query) {
     const response = await fetch('../includes/search-civilians.php?name=' + encodeURIComponent(query));
     const results = await response.json();
     const list = document.getElementById('results');
@@ -168,7 +168,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </script>
 
 <?php
-// ✅ Make sure modal partials receive correct variable names
+// Required by penal-modal and 10-codes-modal
 $penal_titles = $penalTitles;
 $sections_by_title = $sectionsByTitle;
 ?>
