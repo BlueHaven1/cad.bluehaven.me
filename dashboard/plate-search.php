@@ -34,6 +34,11 @@ if (!isset($penal_titles) || !isset($sections_by_title)) {
     $sections_by_title[$s['title_id']][] = $s;
   }
 }
+
+// Load 10-codes content for modal
+[$res] = supabaseRequest("ten_codes?id=eq.1", "GET");
+$data = json_decode($res, true);
+$ten_codes_content = $data[0]['content'] ?? '<p>No 10-Codes available.</p>';
 ?>
 
 <!DOCTYPE html>
