@@ -12,6 +12,8 @@ $username = $_SESSION['username'] ?? 'Unknown';
 $department = $_SESSION['department'] ?? 'N/A';
 $callsign = $_SESSION['callsign'] ?? 'None';
 
+$dashboard_link = ($_SESSION['active_mdt'] ?? '') === 'safr' ? 'safr-mdt.php' : 'mdt.php';
+
 // Preload Penal Code data for modal
 [$titlesResp] = supabaseRequest("penal_titles", "GET");
 $penal_titles = json_decode($titlesResp, true) ?? [];
@@ -45,14 +47,9 @@ $content = $data[0]['content'] ?? '<p>No 10-Codes available.</p>';
   <div>
     <h2 class="text-2xl font-bold mb-6">MDT</h2>
     <nav class="space-y-2">
-      <a href="mdt.php" class="block px-3 py-2 rounded hover:bg-gray-700">Dashboard</a>
+      <a href="<?= $dashboard_link ?>" class="block px-3 py-2 rounded hover:bg-gray-700">Dashboard</a>
       <a href="name-search.php" class="block px-3 py-2 rounded hover:bg-gray-700">Name Search</a>
       <a href="plate-search.php" class="block px-3 py-2 rounded bg-gray-700">Plate Search</a>
-      <a href="citation.php" class="block px-3 py-2 rounded hover:bg-gray-700">Citation</a>
-      <a href="warning.php" class="block px-3 py-2 rounded hover:bg-gray-700">Written Warning</a>
-      <a href="arrest.php" class="block px-3 py-2 rounded hover:bg-gray-700">Arrest Report</a>
-      <a href="file-warrant.php" class="block px-3 py-2 rounded hover:bg-gray-700">File Warrant</a>
-      <a href="serve-warrant.php" class="block px-3 py-2 rounded hover:bg-gray-700">Serve Warrant</a>
     </nav>
   </div>
   <a href="exit-mdt.php" class="block px-3 py-2 mt-6 rounded bg-red-600 hover:bg-red-700 text-center font-semibold">
