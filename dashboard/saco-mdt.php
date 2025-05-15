@@ -58,6 +58,10 @@ $active_calls = json_decode($callRes, true) ?? [];
   </style>
 </head>
 <body class="bg-gray-900 text-white flex min-h-screen">
+<!-- Alert Banner -->
+<div id="alert-banner" class="w-full text-center text-white text-lg font-bold py-3 hidden fixed top-0 z-50"></div>
+<!-- Spacer for fixed header -->
+<div id="alert-spacer" class="h-0"></div>
 
 <!-- Sidebar -->
 <aside class="w-64 bg-gray-800 p-4 flex flex-col justify-between fixed h-full">
@@ -427,14 +431,32 @@ document.getElementById('editCallForm').addEventListener('submit', function (e) 
   })
   .catch(err => alert('Error: ' + err.message));
 });
-function toggleAlert(type) {
-  fetch('../includes/toggle-alert.php', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ type })
-  })
-  .then(() => loadAlerts());
+function loadAlerts() {
+  fetch('../includes/get-alerts.php')
+    .then(res => res.json())
+    .then(alerts => {
+      const banner = document.getElementById('alert-banner');
+      const spacer = document.getElementById('alert-spacer');
+
+      const active = alerts.filter(a => a.status);
+      if (active.length === 0) {
+        banner.classList.add('hidden');
+        spacer.classList.add('h-0');
+        return;
+      }
+
+      const messages = active.map(alert => {
+        return alert.type === 'signal100'
+          ? '🚨 SIGNAL 100 IS IN EFFECT'
+          : '🔇 10-3 RADIO SILENCE IN EFFECT';
+      });
+
+      banner.textContent = messages.join(' | ');
+      banner.className = 'w-full text-center text-white text-lg font-bold py-3 fixed top-0 z-50 bg-red-600';
+      spacer.className = 'h-14'; // reserve space for banner
+    });
 }
+
 
 function loadAlerts() {
   fetch('../includes/get-alerts.php')
