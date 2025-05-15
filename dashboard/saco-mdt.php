@@ -123,44 +123,55 @@ $active_calls = json_decode($callRes, true) ?? [];
       </div>
     </div>
 
-    <!-- Active Calls -->
-    <div class="bg-gray-800 rounded-2xl p-6 shadow-xl border border-gray-700 mt-12">
-      <h2 class="text-2xl font-semibold mb-6">Active Calls</h2>
-      <?php if (!empty($active_calls)): ?>
-        <div class="space-y-6">
+<!-- Active Calls -->
+<div class="bg-gray-800 rounded-2xl p-6 shadow-xl border border-gray-700 mt-12">
+  <h2 class="text-2xl font-semibold mb-6">Active Calls</h2>
+
+  <?php if (!empty($active_calls)): ?>
+    <div class="overflow-x-auto">
+      <table class="w-full text-left text-sm text-gray-300">
+        <thead class="bg-gray-700 text-gray-400 text-sm">
+          <tr>
+            <th class="px-4 py-2">Title</th>
+            <th class="px-4 py-2">Location</th>
+            <th class="px-4 py-2">Postal</th>
+            <th class="px-4 py-2">Units</th>
+          </tr>
+        </thead>
+        <tbody>
           <?php foreach ($active_calls as $call): ?>
-            <div class="bg-gray-700 rounded-lg p-4 border border-gray-600">
-              <h3 class="text-xl font-bold mb-1"><?= htmlspecialchars($call['title']) ?></h3>
-              <p class="text-sm text-gray-400 mb-2"><?= htmlspecialchars($call['description']) ?></p>
-              <div class="text-sm text-gray-300 space-y-1">
-                <p><strong>Location:</strong> <?= htmlspecialchars($call['location']) ?><?= $call['postal'] ? ' (Postal: ' . htmlspecialchars($call['postal']) . ')' : '' ?></p>
-                <p><strong>Units:</strong>
-<?php
-  $unitList = explode(',', $call['units'] ?? '');
-  if (empty($unitList[0])) {
-    echo '<span class="text-gray-400">None</span>';
-  } else {
-    $displayUnits = [];
-    foreach ($unitList as $uid) {
-      $uid = trim($uid);
-      if (isset($unitMap[$uid])) {
-$displayUnits[] = htmlspecialchars($unitMap[$uid]['callsign']);
-      } else {
-        $displayUnits[] = htmlspecialchars($uid); // fallback if unit not found
-      }
-    }
-    echo implode(', ', $displayUnits);
-  }
-?>
-                </p>
-              </div>
-            </div>
+            <tr class="border-b border-gray-700">
+              <td class="px-4 py-2 font-medium text-white"><?= htmlspecialchars($call['title']) ?></td>
+              <td class="px-4 py-2"><?= htmlspecialchars($call['location']) ?></td>
+              <td class="px-4 py-2"><?= htmlspecialchars($call['postal'] ?: '-') ?></td>
+              <td class="px-4 py-2">
+                <?php
+                  $unitList = explode(',', $call['units'] ?? '');
+                  if (empty($unitList[0])) {
+                    echo '<span class="text-gray-400">None</span>';
+                  } else {
+                    $displayUnits = [];
+                    foreach ($unitList as $uid) {
+                      $uid = trim($uid);
+                      if (isset($unitMap[$uid])) {
+                        $displayUnits[] = htmlspecialchars($unitMap[$uid]['callsign']);
+                      } else {
+                        $displayUnits[] = htmlspecialchars($uid);
+                      }
+                    }
+                    echo implode(', ', $displayUnits);
+                  }
+                ?>
+              </td>
+            </tr>
           <?php endforeach; ?>
-        </div>
-      <?php else: ?>
-        <p class="text-gray-400">No active calls at the moment.</p>
-      <?php endif; ?>
+        </tbody>
+      </table>
     </div>
+  <?php else: ?>
+    <p class="text-gray-400">No active calls at the moment.</p>
+  <?php endif; ?>
+</div>
 
   </div>
 </main>
