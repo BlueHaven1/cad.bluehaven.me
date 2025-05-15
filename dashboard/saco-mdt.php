@@ -14,6 +14,7 @@ $username = $_SESSION['username'] ?? 'Unknown';
 $department = $_SESSION['department'] ?? 'SACO';
 $callsign = $_SESSION['callsign'] ?? 'None';
 
+// Penal code & 10-codes
 [$titlesResp] = supabaseRequest("penal_titles", "GET");
 $penal_titles = json_decode($titlesResp, true) ?? [];
 
@@ -30,8 +31,13 @@ foreach ($penal_titles as $title) {
 $data = json_decode($res, true);
 $content = $data[0]['content'] ?? '<p>No 10-Codes available.</p>';
 
+// Fetch units
 [$unitRes] = supabaseRequest("unit_status", "GET");
 $active_units = json_decode($unitRes, true) ?? [];
+
+// Fetch calls
+[$callRes] = supabaseRequest("calls?order=created_at.desc", "GET");
+$active_calls = json_decode($callRes, true) ?? [];
 ?>
 
 <!DOCTYPE html>
@@ -90,7 +96,7 @@ $active_units = json_decode($unitRes, true) ?? [];
       </div>
     </div>
 
-    <!-- Unit Overview -->
+    <!-- Active Units -->
     <div class="bg-gray-800 rounded-2xl p-6 shadow-xl border border-gray-700 mt-12">
       <h2 class="text-2xl font-semibold mb-6">Active Units Overview</h2>
       <div class="overflow-x-auto">
@@ -110,6 +116,37 @@ $active_units = json_decode($unitRes, true) ?? [];
         </div>
       </div>
     </div>
+
+    <!-- Active Calls -->
+    <div class="bg-gray-800 rounded-2xl p-6 shadow-xl border border-gray-700 mt-12">
+      <h2 class="text-2xl font-semibold mb-6">Active Calls</h2>
+      <?php if (!empty($active_calls)): ?>
+        <div class="space-y-6">
+          <?php foreach ($active_calls as $call): ?>
+            <div class="bg-gray-700 rounded-lg p-4 border border-gray-600">
+              <h3 class="text-xl font-bold mb-1"><?= htmlspecialchars($call['title']) ?></h3>
+              <p class="text-sm text-gray-400 mb-2"><?= htmlspecialchars($call['description']) ?></p>
+              <div class="text-sm text-gray-300 space-y-1">
+                <p><strong>Location:</strong> <?= htmlspecialchars($call['location']) ?><?= $call['postal'] ? ' (Postal: ' . htmlspecialchars($call['postal']) . ')' : '' ?></p>
+                <p><strong>Units:</strong>
+                  <?php
+                    $unitList = explode(',', $call['units'] ?? '');
+                    if (empty($unitList[0])) {
+                      echo '<span class="text-gray-400">None</span>';
+                    } else {
+                      echo implode(', ', array_map('htmlspecialchars', $unitList));
+                    }
+                  ?>
+                </p>
+              </div>
+            </div>
+          <?php endforeach; ?>
+        </div>
+      <?php else: ?>
+        <p class="text-gray-400">No active calls at the moment.</p>
+      <?php endif; ?>
+    </div>
+
   </div>
 </main>
 
@@ -203,7 +240,6 @@ $active_units = json_decode($unitRes, true) ?? [];
   loadUnits();
   setInterval(loadUnits, 3000);
 
-  // Modal controls
   const modal = document.getElementById('createCallModal');
   document.getElementById('openCreateCall').addEventListener('click', () => {
     modal.classList.remove('hidden');
@@ -217,7 +253,6 @@ $active_units = json_decode($unitRes, true) ?? [];
     if (e.key === 'Escape') closeCallModal();
   });
 
-  // Form submission
   document.getElementById('createCallForm').addEventListener('submit', function(e) {
     e.preventDefault();
 
@@ -239,6 +274,7 @@ $active_units = json_decode($unitRes, true) ?? [];
         alert('Call created successfully');
         form.reset();
         closeCallModal();
+        location.reload();
       } else {
         alert('Failed to create call: ' + (data.error || 'Unknown error'));
       }
