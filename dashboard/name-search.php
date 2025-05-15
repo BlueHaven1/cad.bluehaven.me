@@ -12,7 +12,12 @@ $username = $_SESSION['username'] ?? 'Unknown';
 $department = $_SESSION['department'] ?? 'N/A';
 $callsign = $_SESSION['callsign'] ?? 'None';
 
-$dashboard_link = ($_SESSION['active_mdt'] ?? '') === 'safr' ? 'safr-mdt.php' : 'mdt.php';
+// Determine which dashboard to return to
+if (isset($_GET['return']) && $_GET['return'] === 'saco') {
+    $dashboard_link = 'saco-mdt.php';
+} else {
+    $dashboard_link = ($_SESSION['active_mdt'] ?? '') === 'safr' ? 'safr-mdt.php' : 'mdt.php';
+}
 
 // Preload Penal Code data for modal
 [$titlesResp] = supabaseRequest("penal_titles", "GET");
@@ -48,8 +53,8 @@ $content = $data[0]['content'] ?? '<p>No 10-Codes available.</p>';
     <h2 class="text-2xl font-bold mb-6">MDT</h2>
     <nav class="space-y-2">
       <a href="<?= $dashboard_link ?>" class="block px-3 py-2 rounded hover:bg-gray-700">Dashboard</a>
-      <a href="name-search.php" class="block px-3 py-2 rounded hover:bg-gray-700">Name Search</a>
-      <a href="plate-search.php" class="block px-3 py-2 rounded hover:bg-gray-700">Plate Search</a>
+      <a href="name-search.php<?= isset($_GET['return']) ? '?return='.$_GET['return'] : '' ?>" class="block px-3 py-2 rounded bg-gray-700">Name Search</a>
+      <a href="plate-search.php<?= isset($_GET['return']) ? '?return='.$_GET['return'] : '' ?>" class="block px-3 py-2 rounded hover:bg-gray-700">Plate Search</a>
 
       <?php if (($_SESSION['active_mdt'] ?? '') !== 'safr'): ?>
         <a href="citation.php" class="block px-3 py-2 rounded hover:bg-gray-700">Citation</a>
@@ -106,8 +111,12 @@ input.addEventListener('input', () => {
         return;
       }
 
+      // Get the return parameter if it exists
+      const returnParam = new URLSearchParams(window.location.search).get('return');
+      const returnQueryString = returnParam ? `&return=${returnParam}` : '';
+
       resultsContainer.innerHTML = data.map(civ => `
-        <a href="civilian.php?id=${civ.id}" 
+        <a href="civilian.php?id=${civ.id}${returnQueryString}"
            class="result-card block bg-gray-800 p-4 rounded-lg shadow border border-gray-700 hover:bg-gray-700 transform opacity-0 translate-y-2">
           <h2 class="text-xl font-semibold text-white">${civ.name}</h2>
           <p class="text-sm text-gray-400">DOB: ${civ.dob}</p>

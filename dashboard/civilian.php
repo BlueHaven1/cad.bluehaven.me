@@ -12,8 +12,12 @@ $username = $_SESSION['username'] ?? 'Unknown';
 $department = $_SESSION['department'] ?? 'N/A';
 $callsign = $_SESSION['callsign'] ?? 'None';
 
-// SAFR or LEO dashboard link
-$dashboard_link = ($_SESSION['active_mdt'] ?? '') === 'safr' ? 'safr-mdt.php' : 'mdt.php';
+// Determine which dashboard to return to
+if (isset($_GET['return']) && $_GET['return'] === 'saco') {
+    $dashboard_link = 'saco-mdt.php';
+} else {
+    $dashboard_link = ($_SESSION['active_mdt'] ?? '') === 'safr' ? 'safr-mdt.php' : 'mdt.php';
+}
 
 $civId = $_GET['id'] ?? null;
 if (!$civId) {
@@ -82,8 +86,8 @@ $content = $data[0]['content'] ?? '<p>No 10-Codes available.</p>';
     <h2 class="text-2xl font-bold mb-6">MDT</h2>
     <nav class="space-y-2">
       <a href="<?= $dashboard_link ?>" class="block px-3 py-2 rounded hover:bg-gray-700">Dashboard</a>
-      <a href="name-search.php" class="block px-3 py-2 rounded hover:bg-gray-700">Name Search</a>
-      <a href="plate-search.php" class="block px-3 py-2 rounded hover:bg-gray-700">Plate Search</a>
+      <a href="name-search.php<?= isset($_GET['return']) ? '?return='.$_GET['return'] : '' ?>" class="block px-3 py-2 rounded hover:bg-gray-700">Name Search</a>
+      <a href="plate-search.php<?= isset($_GET['return']) ? '?return='.$_GET['return'] : '' ?>" class="block px-3 py-2 rounded hover:bg-gray-700">Plate Search</a>
       <?php if (($_SESSION['active_mdt'] ?? '') !== 'safr'): ?>
         <a href="citation.php" class="block px-3 py-2 rounded hover:bg-gray-700">Citation</a>
         <a href="warning.php" class="block px-3 py-2 rounded hover:bg-gray-700">Written Warning</a>

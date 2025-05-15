@@ -72,6 +72,8 @@ $active_calls = json_decode($callRes, true) ?? [];
     <h2 class="text-2xl font-bold mb-6">SACO MDT</h2>
     <nav class="space-y-2">
       <a href="saco-mdt.php" class="block px-3 py-2 rounded bg-gray-700">Dashboard</a>
+      <a href="name-search.php?return=saco" class="block px-3 py-2 rounded hover:bg-gray-700">Name Search</a>
+      <a href="plate-search.php?return=saco" class="block px-3 py-2 rounded hover:bg-gray-700">Plate Search</a>
     </nav>
   </div>
   <a href="exit-mdt.php" class="block px-3 py-2 mt-6 rounded bg-red-600 hover:bg-red-700 text-center font-semibold">
