@@ -80,6 +80,8 @@ $content = $data[0]['content'] ?? '<p>No 10-Codes available.</p>';
     <h2 class="text-2xl font-bold mb-6">MDT</h2>
     <nav class="space-y-2">
       <a href="mdt.php" class="block px-3 py-2 rounded hover:bg-gray-700 bg-gray-700">Dashboard</a>
+      <a href="name-search.php" class="block px-3 py-2 rounded hover:bg-gray-700">Name Search</a>
+      <a href="plate-search.php" class="block px-3 py-2 rounded hover:bg-gray-700">Plate Search</a>
       <a href="citation.php" class="block px-3 py-2 rounded hover:bg-gray-700">Citation</a>
       <a href="warning.php" class="block px-3 py-2 rounded hover:bg-gray-700">Written Warning</a>
       <a href="arrest.php" class="block px-3 py-2 rounded hover:bg-gray-700">Arrest Report</a>

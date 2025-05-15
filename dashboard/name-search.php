@@ -55,16 +55,21 @@ $content = $data[0]['content'] ?? '<p>No 10-Codes available.</p>';
       <a href="<?= $dashboard_link ?>" class="block px-3 py-2 rounded hover:bg-gray-700">Dashboard</a>
 
       <?php if (isset($_GET['return']) && $_GET['return'] === 'saco'): ?>
+        <!-- Only show name and plate search for SACO MDT -->
         <a href="name-search.php?return=saco" class="block px-3 py-2 rounded bg-gray-700">Name Search</a>
         <a href="plate-search.php?return=saco" class="block px-3 py-2 rounded hover:bg-gray-700">Plate Search</a>
-      <?php endif; ?>
+      <?php else: ?>
+        <!-- Show all links for other MDTs -->
+        <a href="name-search.php" class="block px-3 py-2 rounded bg-gray-700">Name Search</a>
+        <a href="plate-search.php" class="block px-3 py-2 rounded hover:bg-gray-700">Plate Search</a>
 
-      <?php if (($_SESSION['active_mdt'] ?? '') !== 'safr' && (!isset($_GET['return']) || $_GET['return'] !== 'saco')): ?>
-        <a href="citation.php" class="block px-3 py-2 rounded hover:bg-gray-700">Citation</a>
-        <a href="warning.php" class="block px-3 py-2 rounded hover:bg-gray-700">Written Warning</a>
-        <a href="arrest.php" class="block px-3 py-2 rounded hover:bg-gray-700">Arrest Report</a>
-        <a href="file-warrant.php" class="block px-3 py-2 rounded hover:bg-gray-700">File Warrant</a>
-        <a href="serve-warrant.php" class="block px-3 py-2 rounded hover:bg-gray-700">Serve Warrant</a>
+        <?php if (($_SESSION['active_mdt'] ?? '') !== 'safr'): ?>
+          <a href="citation.php" class="block px-3 py-2 rounded hover:bg-gray-700">Citation</a>
+          <a href="warning.php" class="block px-3 py-2 rounded hover:bg-gray-700">Written Warning</a>
+          <a href="arrest.php" class="block px-3 py-2 rounded hover:bg-gray-700">Arrest Report</a>
+          <a href="file-warrant.php" class="block px-3 py-2 rounded hover:bg-gray-700">File Warrant</a>
+          <a href="serve-warrant.php" class="block px-3 py-2 rounded hover:bg-gray-700">Serve Warrant</a>
+        <?php endif; ?>
       <?php endif; ?>
     </nav>
   </div>
