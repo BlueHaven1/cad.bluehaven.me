@@ -2,7 +2,6 @@
 session_start();
 require_once '../includes/supabase.php';
 
-// Restrict to SACO only
 if (!isset($_SESSION['user_id']) || !isset($_SESSION['mdt_active']) || ($_SESSION['department'] ?? '') !== 'SACO') {
     header("Location: ../patrol.php");
     exit;
@@ -74,7 +73,6 @@ $active_units = json_decode($unitRes, true) ?? [];
         <div><p class="text-sm text-gray-400 uppercase mb-1">Department</p><p class="text-xl font-semibold">San Andreas Communications</p></div>
         <div><p class="text-sm text-gray-400 uppercase mb-1">Callsign</p><p class="text-xl font-semibold"><?= htmlspecialchars($callsign) ?></p></div>
         <div class="col-span-full mt-4 flex justify-between items-start flex-wrap gap-4">
-          <!-- Status controls (left) -->
           <div>
             <p class="text-sm text-gray-400 uppercase mb-1">Status</p>
             <div class="flex flex-wrap gap-2 mt-2">
@@ -83,7 +81,6 @@ $active_units = json_decode($unitRes, true) ?? [];
               <?php endforeach; ?>
             </div>
           </div>
-          <!-- Create Call Button (right) -->
           <div class="mt-4">
             <button id="openCreateCall" class="bg-blue-600 hover:bg-blue-700 text-sm px-5 py-2 rounded font-semibold">
               + Create a Call
@@ -113,7 +110,6 @@ $active_units = json_decode($unitRes, true) ?? [];
         </div>
       </div>
     </div>
-
   </div>
 </main>
 
@@ -207,7 +203,7 @@ $active_units = json_decode($unitRes, true) ?? [];
   loadUnits();
   setInterval(loadUnits, 3000);
 
-  // Modal Controls
+  // Modal controls
   const modal = document.getElementById('createCallModal');
   document.getElementById('openCreateCall').addEventListener('click', () => {
     modal.classList.remove('hidden');
@@ -219,6 +215,37 @@ $active_units = json_decode($unitRes, true) ?? [];
 
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape') closeCallModal();
+  });
+
+  // Form submission
+  document.getElementById('createCallForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    const form = e.target;
+    const formData = new FormData(form);
+    const params = new URLSearchParams();
+    for (const pair of formData.entries()) {
+      params.append(pair[0], pair[1]);
+    }
+
+    fetch('../includes/create-call.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: params.toString()
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        alert('Call created successfully');
+        form.reset();
+        closeCallModal();
+      } else {
+        alert('Failed to create call: ' + (data.error || 'Unknown error'));
+      }
+    })
+    .catch(err => {
+      alert('Error: ' + err.message);
+    });
   });
 </script>
 
