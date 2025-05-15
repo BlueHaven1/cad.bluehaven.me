@@ -112,6 +112,7 @@ $active_calls = json_decode($callRes, true) ?? [];
   </button>
 </div>
 
+
     <!-- Active Units -->
     <div class="bg-gray-800 rounded-2xl p-6 shadow-xl border border-gray-700 mt-12">
       <h2 class="text-2xl font-semibold mb-6">Active Units Overview</h2>
