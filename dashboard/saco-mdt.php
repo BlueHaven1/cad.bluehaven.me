@@ -62,6 +62,8 @@ $active_calls = json_decode($callRes, true) ?? [];
 <div id="alert-banner" class="w-full text-center text-white text-lg font-bold py-3 hidden fixed top-0 z-50"></div>
 <!-- Spacer for fixed header -->
 <div id="alert-spacer" class="h-0"></div>
+<!-- Alert Sound -->
+<audio id="alert-sound" src="/assets/sounds/alert.mp3" preload="auto"></audio>
 
 <!-- Sidebar -->
 <aside class="w-64 bg-gray-800 p-4 flex flex-col justify-between fixed h-full">
@@ -193,9 +195,9 @@ $active_calls = json_decode($callRes, true) ?? [];
               </td>
 <td class="px-4 py-2 flex gap-2">
   <!-- Edit -->
-  <button 
-    type="button" 
-    onclick="openEditModal('<?= $call['id'] ?>', <?= htmlspecialchars(json_encode($call)) ?>)" 
+  <button
+    type="button"
+    onclick="openEditModal('<?= $call['id'] ?>', <?= htmlspecialchars(json_encode($call)) ?>)"
     class="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded text-sm">
     Edit
   </button>
@@ -442,6 +444,38 @@ document.getElementById('editCallForm').addEventListener('submit', function (e) 
   })
   .catch(err => alert('Error: ' + err.message));
 });
+// Global variables for alert sound management
+let alertSoundInterval = null;
+let alertSound = null; // Will be initialized when DOM is loaded
+
+// Function to play alert sound
+function playAlertSound() {
+  if (alertSound) {
+    alertSound.currentTime = 0; // Reset to beginning
+    alertSound.play().catch(e => console.error('Error playing sound:', e));
+  }
+}
+
+// Function to start repeating alert sound
+function startAlertSound() {
+  // Clear any existing interval first
+  stopAlertSound();
+
+  // Play immediately
+  playAlertSound();
+
+  // Set up interval to play every 10 seconds
+  alertSoundInterval = setInterval(playAlertSound, 10000);
+}
+
+// Function to stop alert sound
+function stopAlertSound() {
+  if (alertSoundInterval) {
+    clearInterval(alertSoundInterval);
+    alertSoundInterval = null;
+  }
+}
+
 function loadAlerts() {
   fetch('../includes/get-alerts.php')
     .then(res => res.json())
@@ -453,6 +487,7 @@ function loadAlerts() {
       if (active.length === 0) {
         banner.classList.add('hidden');
         spacer.classList.add('h-0');
+        stopAlertSound(); // Stop sound when no active alerts
         return;
       }
 
@@ -465,15 +500,26 @@ function loadAlerts() {
       banner.textContent = messages.join(' | ');
       banner.className = 'w-full text-center text-white text-lg font-bold py-3 fixed top-0 z-50 bg-red-600';
       spacer.className = 'h-14'; // reserve space for banner
+
+      // If we have active alerts, make sure sound is playing
+      if (!alertSoundInterval) {
+        startAlertSound();
+      }
     });
 }
-// Load alerts immediately and then every 5 seconds
-loadAlerts();
+// Set up interval to check alerts every 5 seconds
 setInterval(loadAlerts, 5000);
 
 document.addEventListener('DOMContentLoaded', () => {
+  // Initialize audio element reference
+  alertSound = document.getElementById('alert-sound');
+
+  // Add event listeners for alert toggle buttons
   document.getElementById('toggle-signal100')?.addEventListener('click', () => toggleAlert('signal100'));
   document.getElementById('toggle-10-3')?.addEventListener('click', () => toggleAlert('10-3'));
+
+  // Check if there are active alerts on page load
+  loadAlerts();
 });
 
 function toggleAlert(type) {

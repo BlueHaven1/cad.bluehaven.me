@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Test Alert Sound</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+      line-height: 1.6;
+    }
+    button {
+      padding: 10px 15px;
+      margin: 10px 5px;
+      cursor: pointer;
+    }
+    .success {
+      color: green;
+      font-weight: bold;
+    }
+    .error {
+      color: red;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h1>Test Alert Sound</h1>
+  
+  <p>This page tests the alert sound functionality for the SACO MDT.</p>
+  
+  <div>
+    <h2>Sound Test</h2>
+    <audio id="alert-sound" src="/assets/sounds/alert.mp3" preload="auto"></audio>
+    <button id="play-once">Play Sound Once</button>
+    <button id="start-repeat">Start Repeating Sound (10s)</button>
+    <button id="stop-sound">Stop Sound</button>
+  </div>
+  
+  <div id="status"></div>
+  
+  <script>
+    // Global variables
+    let alertSoundInterval = null;
+    let alertSound = null;
+    
+    // Initialize when DOM is loaded
+    document.addEventListener('DOMContentLoaded', () => {
+      alertSound = document.getElementById('alert-sound');
+      
+      // Set up event listeners
+      document.getElementById('play-once').addEventListener('click', playOnce);
+      document.getElementById('start-repeat').addEventListener('click', startRepeating);
+      document.getElementById('stop-sound').addEventListener('click', stopSound);
+      
+      updateStatus('Ready to test');
+    });
+    
+    // Play sound once
+    function playOnce() {
+      if (alertSound) {
+        alertSound.currentTime = 0;
+        alertSound.play()
+          .then(() => {
+            updateStatus('Sound played successfully');
+          })
+          .catch(error => {
+            updateStatus(`Error playing sound: ${error.message}`, true);
+          });
+      } else {
+        updateStatus('Audio element not found', true);
+      }
+    }
+    
+    // Start repeating sound
+    function startRepeating() {
+      stopSound();
+      
+      // Play immediately
+      playOnce();
+      
+      // Set up interval
+      alertSoundInterval = setInterval(() => {
+        playOnce();
+        updateStatus('Playing sound (repeating every 10 seconds)');
+      }, 10000);
+      
+      updateStatus('Started repeating sound every 10 seconds');
+    }
+    
+    // Stop sound
+    function stopSound() {
+      if (alertSoundInterval) {
+        clearInterval(alertSoundInterval);
+        alertSoundInterval = null;
+        updateStatus('Stopped repeating sound');
+      }
+    }
+    
+    // Update status display
+    function updateStatus(message, isError = false) {
+      const statusElement = document.getElementById('status');
+      statusElement.textContent = message;
+      statusElement.className = isError ? 'error' : 'success';
+    }
+  </script>
+</body>
+</html>
