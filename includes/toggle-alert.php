@@ -1,29 +1,36 @@
 <?php
 require_once 'supabase.php';
 
-$type = $_POST['type'] ?? '';
-if (!in_array($type, ['signal100', '10-3'])) {
-    echo json_encode(['success' => false, 'error' => 'Invalid type']);
+if ($_SERVER['REQUEST_METHOD'] !== 'POST' || empty($_POST['type'])) {
+    echo json_encode(['success' => false, 'error' => 'Invalid request']);
     exit;
 }
 
-// Get current status
+$type = $_POST['type'];
+$allowed = ['signal100', '10-3'];
+if (!in_array($type, $allowed)) {
+    echo json_encode(['success' => false, 'error' => 'Invalid alert type']);
+    exit;
+}
+
+// Get current alert status
 [$res] = supabaseRequest("alerts?type=eq.$type", "GET");
-$alerts = json_decode($res, true);
-if (!$alerts || empty($alerts[0])) {
+$data = json_decode($res, true);
+
+if (!$data || !isset($data[0])) {
     echo json_encode(['success' => false, 'error' => 'Alert not found']);
     exit;
 }
 
-$id = $alerts[0]['id'];
-$newStatus = !$alerts[0]['status'];
+$alert = $data[0];
+$newStatus = !$alert['status'];
 
-// Update status
-$data = ['status' => $newStatus];
-[$updateRes, $error] = supabaseRequest("alerts?id=eq.$id", "PATCH", $data);
+// Update alert
+$update = [
+    'status' => $newStatus
+];
+$url = "alerts?id=eq." . $alert['id'];
+[$res] = supabaseRequest($url, "PATCH", $update);
 
-if ($error) {
-    echo json_encode(['success' => false, 'error' => 'Update failed']);
-} else {
-    echo json_encode(['success' => true]);
-}
+echo json_encode(['success' => true]);
+exit;
