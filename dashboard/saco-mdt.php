@@ -15,7 +15,6 @@ $username = $_SESSION['username'] ?? 'Unknown';
 $department = $_SESSION['department'] ?? 'SACO';
 $callsign = $_SESSION['callsign'] ?? 'None';
 
-// Penal code & 10-codes
 [$titlesResp] = supabaseRequest("penal_titles", "GET");
 $penal_titles = json_decode($titlesResp, true) ?? [];
 
@@ -74,25 +73,23 @@ $active_units = json_decode($unitRes, true) ?? [];
         <div><p class="text-sm text-gray-400 uppercase mb-1">Username</p><p class="text-xl font-semibold"><?= htmlspecialchars($username) ?></p></div>
         <div><p class="text-sm text-gray-400 uppercase mb-1">Department</p><p class="text-xl font-semibold">San Andreas Communications</p></div>
         <div><p class="text-sm text-gray-400 uppercase mb-1">Callsign</p><p class="text-xl font-semibold"><?= htmlspecialchars($callsign) ?></p></div>
-<div class="col-span-full mt-4 flex justify-between items-start flex-wrap gap-4">
-  <!-- Status controls (left) -->
-  <div>
-    <p class="text-sm text-gray-400 uppercase mb-1">Status</p>
-    <div class="flex flex-wrap gap-2 mt-2">
-      <?php foreach (['10-8', '10-6', '10-7'] as $opt): ?>
-        <button onclick="updateStatus('<?= $opt ?>')" class="<?= $status === $opt ? 'bg-green-600 text-white ring-2 ring-green-400' : 'bg-gray-700 hover:bg-gray-600 text-white' ?> px-4 py-2 rounded text-sm"><?= $opt ?></button>
-      <?php endforeach; ?>
-    </div>
-  </div>
-
-  <!-- Create Call Button (right) -->
-  <div class="mt-6">
-    <button class="bg-blue-600 hover:bg-blue-700 text-sm px-5 py-2 rounded font-semibold">
-      + Create a Call
-    </button>
-  </div>
-</div>
-
+        <div class="col-span-full mt-4 flex justify-between items-start flex-wrap gap-4">
+          <!-- Status controls (left) -->
+          <div>
+            <p class="text-sm text-gray-400 uppercase mb-1">Status</p>
+            <div class="flex flex-wrap gap-2 mt-2">
+              <?php foreach (['10-8', '10-6', '10-7'] as $opt): ?>
+                <button onclick="updateStatus('<?= $opt ?>')" class="<?= $status === $opt ? 'bg-green-600 text-white ring-2 ring-green-400' : 'bg-gray-700 hover:bg-gray-600 text-white' ?> px-4 py-2 rounded text-sm"><?= $opt ?></button>
+              <?php endforeach; ?>
+            </div>
+          </div>
+          <!-- Create Call Button (right) -->
+          <div class="mt-4">
+            <button id="openCreateCall" class="bg-blue-600 hover:bg-blue-700 text-sm px-5 py-2 rounded font-semibold">
+              + Create a Call
+            </button>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -119,6 +116,46 @@ $active_units = json_decode($unitRes, true) ?? [];
 
   </div>
 </main>
+
+<!-- Create Call Modal -->
+<div id="createCallModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 hidden">
+  <div class="bg-gray-800 rounded-xl w-full max-w-xl p-6 shadow-xl border border-gray-700 relative">
+    <h2 class="text-2xl font-semibold mb-4">Create a New Call</h2>
+    <form id="createCallForm" class="space-y-4">
+      <div>
+        <label class="block text-sm mb-1 text-gray-300">Title</label>
+        <input type="text" name="title" required class="w-full px-4 py-2 rounded bg-gray-700 border border-gray-600 focus:outline-none">
+      </div>
+      <div>
+        <label class="block text-sm mb-1 text-gray-300">Description</label>
+        <textarea name="description" rows="4" required class="w-full px-4 py-2 rounded bg-gray-700 border border-gray-600 focus:outline-none"></textarea>
+      </div>
+      <div>
+        <label class="block text-sm mb-1 text-gray-300">Location</label>
+        <input type="text" name="location" required class="w-full px-4 py-2 rounded bg-gray-700 border border-gray-600 focus:outline-none">
+      </div>
+      <div>
+        <label class="block text-sm mb-1 text-gray-300">Postal</label>
+        <input type="text" name="postal" class="w-full px-4 py-2 rounded bg-gray-700 border border-gray-600 focus:outline-none">
+      </div>
+      <div>
+        <label class="block text-sm mb-1 text-gray-300">Assign Units</label>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-48 overflow-y-auto pr-2 scrollbar bg-gray-700 p-3 rounded">
+          <?php foreach ($active_units as $unit): ?>
+            <label class="flex items-center space-x-2">
+              <input type="checkbox" name="units[]" value="<?= htmlspecialchars($unit['user_id']) ?>" class="accent-blue-500">
+              <span><?= htmlspecialchars("{$unit['callsign']} - {$unit['department']} ({$unit['status']})") ?></span>
+            </label>
+          <?php endforeach; ?>
+        </div>
+      </div>
+      <div class="flex justify-between mt-6">
+        <button type="button" onclick="closeCallModal()" class="text-gray-300 hover:text-white">Cancel</button>
+        <button type="submit" class="bg-blue-600 hover:bg-blue-700 px-5 py-2 rounded font-semibold">Submit</button>
+      </div>
+    </form>
+  </div>
+</div>
 
 <script>
   function updateStatus(status) {
@@ -169,6 +206,20 @@ $active_units = json_decode($unitRes, true) ?? [];
 
   loadUnits();
   setInterval(loadUnits, 3000);
+
+  // Modal Controls
+  const modal = document.getElementById('createCallModal');
+  document.getElementById('openCreateCall').addEventListener('click', () => {
+    modal.classList.remove('hidden');
+  });
+
+  function closeCallModal() {
+    modal.classList.add('hidden');
+  }
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closeCallModal();
+  });
 </script>
 
 <?php include '../partials/penal-modal.php'; ?>
