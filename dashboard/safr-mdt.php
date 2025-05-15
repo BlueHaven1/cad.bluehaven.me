@@ -50,6 +50,10 @@ foreach ($active_units as $unit) {
   $unitMap[$unit['user_id']] = $unit;
 }
 
+// Fetch active BOLOs
+[$boloRes] = supabaseRequest("bolos?order=created_at.desc", "GET");
+$active_bolos = json_decode($boloRes, true) ?? [];
+
 // Preload 10-Codes content
 [$res] = supabaseRequest("ten_codes?id=eq.1", "GET");
 $data = json_decode($res, true);
@@ -151,6 +155,51 @@ $content = $data[0]['content'] ?? '<p>No 10-Codes available.</p>';
           </div>
         </div>
       </div>
+    </div>
+
+    <!-- Active BOLOs -->
+    <div class="bg-gray-800 rounded-2xl p-6 shadow-xl border border-gray-700 mt-12">
+      <h2 class="text-2xl font-semibold mb-6">Active BOLOs</h2>
+
+      <?php if (!empty($active_bolos)): ?>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-sm text-gray-300">
+            <thead class="bg-gray-700 text-gray-400 text-sm">
+              <tr>
+                <th class="px-4 py-2">Type</th>
+                <th class="px-4 py-2">Description</th>
+                <th class="px-4 py-2">Last Seen</th>
+                <th class="px-4 py-2">Created At</th>
+                <th class="px-4 py-2">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <?php foreach ($active_bolos as $bolo): ?>
+                <tr class="border-b border-gray-700">
+                  <td class="px-4 py-2 font-medium text-white"><?= htmlspecialchars($bolo['type']) ?></td>
+                  <td class="px-4 py-2">
+                    <div class="max-w-xs overflow-hidden text-ellipsis">
+                      <?= htmlspecialchars(substr($bolo['description'], 0, 100)) ?><?= strlen($bolo['description']) > 100 ? '...' : '' ?>
+                    </div>
+                  </td>
+                  <td class="px-4 py-2"><?= htmlspecialchars($bolo['last_seen']) ?></td>
+                  <td class="px-4 py-2"><?= date('m/d/Y H:i', strtotime($bolo['created_at'])) ?></td>
+                  <td class="px-4 py-2">
+                    <button
+                      type="button"
+                      onclick="viewBolo(<?= htmlspecialchars(json_encode($bolo)) ?>)"
+                      class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm">
+                      View
+                    </button>
+                  </td>
+                </tr>
+              <?php endforeach; ?>
+            </tbody>
+          </table>
+        </div>
+      <?php else: ?>
+        <p class="text-gray-400">No active BOLOs at the moment.</p>
+      <?php endif; ?>
     </div>
 
     <!-- Assigned Calls -->
@@ -385,6 +434,74 @@ $content = $data[0]['content'] ?? '<p>No 10-Codes available.</p>';
       preloadSound(assigncallSound)
         .then(() => console.log('Sound preloaded and ready to play'))
         .catch(e => console.error('Error preloading sound:', e));
+    }
+  });
+</script>
+
+<!-- View BOLO Modal -->
+<div id="viewBoloModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 hidden">
+  <div class="bg-gray-800 rounded-xl w-full max-w-xl p-6 shadow-xl border border-gray-700 relative">
+    <h2 class="text-2xl font-semibold mb-4">BOLO Details</h2>
+    <div class="space-y-4">
+      <div>
+        <h3 class="text-sm text-gray-400 uppercase">Type</h3>
+        <p id="view-type" class="text-lg"></p>
+      </div>
+      <div>
+        <h3 class="text-sm text-gray-400 uppercase">Description</h3>
+        <p id="view-description" class="text-lg whitespace-pre-line"></p>
+      </div>
+      <div>
+        <h3 class="text-sm text-gray-400 uppercase">Last Seen</h3>
+        <p id="view-last-seen" class="text-lg"></p>
+      </div>
+      <div>
+        <h3 class="text-sm text-gray-400 uppercase">Created By</h3>
+        <p id="view-created-by" class="text-lg"></p>
+      </div>
+      <div>
+        <h3 class="text-sm text-gray-400 uppercase">Created At</h3>
+        <p id="view-created-at" class="text-lg"></p>
+      </div>
+      <div class="flex justify-end mt-6">
+        <button type="button" onclick="closeViewModal()" class="bg-gray-600 hover:bg-gray-700 px-5 py-2 rounded font-semibold">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // BOLO View Modal
+  const viewModal = document.getElementById('viewBoloModal');
+
+  function viewBolo(bolo) {
+    document.getElementById('view-type').textContent = bolo.type;
+    document.getElementById('view-description').textContent = bolo.description;
+    document.getElementById('view-last-seen').textContent = bolo.last_seen;
+
+    // Format created by
+    const createdBy = bolo.created_by;
+    <?php foreach ($active_units as $unit): ?>
+      if (createdBy === '<?= $unit['user_id'] ?>') {
+        document.getElementById('view-created-by').textContent = '<?= htmlspecialchars($unit['callsign']) ?>';
+      }
+    <?php endforeach; ?>
+
+    // Format date
+    const createdAt = new Date(bolo.created_at);
+    document.getElementById('view-created-at').textContent = createdAt.toLocaleString();
+
+    viewModal.classList.remove('hidden');
+  }
+
+  function closeViewModal() {
+    viewModal.classList.add('hidden');
+  }
+
+  // Close modal with Escape key
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+      closeViewModal();
     }
   });
 </script>
