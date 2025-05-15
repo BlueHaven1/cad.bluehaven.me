@@ -34,17 +34,6 @@ $content = $data[0]['content'] ?? '<p>No 10-Codes available.</p>';
 
 [$unitRes] = supabaseRequest("unit_status", "GET");
 $active_units = json_decode($unitRes, true) ?? [];
-
-// Fetch Active Calls with Assigned Units
-[$callRes] = supabaseRequest("calls?order=created_at.desc", "GET");
-$calls = json_decode($callRes, true) ?? [];
-
-$call_units_map = [];
-foreach ($calls as $call) {
-    $call_id = $call['id'];
-    [$unitsRes] = supabaseRequest("call_units?call_id=eq.$call_id", "GET");
-    $call_units_map[$call_id] = json_decode($unitsRes, true) ?? [];
-}
 ?>
 
 <!DOCTYPE html>
@@ -116,6 +105,7 @@ foreach ($calls as $call) {
         </div>
       </div>
     </div>
+
   </div>
 </main>
 
@@ -129,7 +119,6 @@ foreach ($calls as $call) {
     .then(res => res.json())
     .then(data => {
       if (data.success) {
-        document.getElementById('currentStatus').textContent = data.newStatus;
         location.reload();
       } else {
         alert('Failed to update status.');
