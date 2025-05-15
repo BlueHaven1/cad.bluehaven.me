@@ -34,9 +34,9 @@ $callData = [
 ];
 
 [$callRes, $callError] = supabaseRequest("calls", "POST", $callData);
-$call = json_decode($callRes, true)[0] ?? null;
+$call = json_decode($callRes, true) ?? null;
 
-if (!$call || !empty($callError)) {
+if (!$call || !empty($callError) || empty($call['id'])) {
     die("Failed to create call.");
 }
 
