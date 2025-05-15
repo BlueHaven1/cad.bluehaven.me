@@ -13,15 +13,14 @@ $description = trim($_POST['description'] ?? '');
 $location = trim($_POST['location'] ?? '');
 $postal = trim($_POST['postal'] ?? '');
 $units = $_POST['units'] ?? [];
-$dispatcher_id = $_SESSION['user_id'] ?? null;
 
-if (!$title || !$description || !$location || !$dispatcher_id) {
+if (!$title || !$description || !$location) {
     http_response_code(400);
     echo json_encode(['error' => 'Missing required fields']);
     exit;
 }
 
-// Format units as comma-separated string
+// Convert units array to comma-separated string
 $unitList = is_array($units) ? implode(',', array_map('trim', $units)) : null;
 
 $data = [
@@ -29,7 +28,6 @@ $data = [
     "description" => $description,
     "location" => $location,
     "postal" => $postal,
-    "dispatcher_id" => $dispatcher_id,
     "units" => $unitList
 ];
 
