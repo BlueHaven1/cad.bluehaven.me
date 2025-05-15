@@ -20,7 +20,7 @@ if (!$title || !$description || !$location) {
     exit;
 }
 
-// Convert units array to comma-separated string
+// Convert units to comma-separated string
 $unitList = is_array($units) ? implode(',', array_map('trim', $units)) : null;
 
 $data = [
@@ -31,12 +31,16 @@ $data = [
     "units" => $unitList
 ];
 
-[$res, $err] = supabaseRequest("calls", "POST", $data);
+[$response, $httpCode] = supabaseRequest("calls", "POST", $data);
 
-if (!empty($err)) {
+// Decode the response and check if valid JSON
+$result = json_decode($response, true);
+
+if ($httpCode >= 200 && $httpCode < 300 && is_array($result) && count($result) > 0) {
+    echo json_encode(['success' => true]);
+} else {
+    // Debugging optional
+    file_put_contents('debug.log', print_r([$response, $httpCode], true));
     http_response_code(500);
     echo json_encode(['error' => 'Failed to create call']);
-    exit;
 }
-
-echo json_encode(['success' => true]);
