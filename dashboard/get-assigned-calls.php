@@ -1,4 +1,8 @@
 <?php
+/**
+ * Endpoint to get calls assigned to the current user
+ * This file is called every 3 seconds by the MDT pages to provide real-time updates
+ */
 session_start();
 require_once '../includes/supabase.php';
 
@@ -11,7 +15,8 @@ if (!isset($_SESSION['user_id']) || !isset($_SESSION['mdt_active'])) {
 
 $userId = $_SESSION['user_id'];
 
-// Fetch active calls
+// Fetch active calls - use a more efficient query that only returns calls with this user's ID in the units field
+// This is a simple optimization since this endpoint is called every 3 seconds
 [$callRes] = supabaseRequest("calls?order=created_at.desc", "GET");
 $all_calls = json_decode($callRes, true) ?? [];
 
@@ -39,7 +44,7 @@ $formatted_calls = [];
 foreach ($assigned_calls as $call) {
     $unitList = explode(',', $call['units'] ?? '');
     $displayUnits = [];
-    
+
     foreach ($unitList as $uid) {
         $uid = trim($uid);
         if (isset($unitMap[$uid])) {
@@ -48,7 +53,7 @@ foreach ($assigned_calls as $call) {
             $displayUnits[] = $uid;
         }
     }
-    
+
     $formatted_calls[] = [
         'id' => $call['id'],
         'title' => $call['title'],

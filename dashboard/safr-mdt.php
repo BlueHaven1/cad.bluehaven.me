@@ -71,6 +71,8 @@ $content = $data[0]['content'] ?? '<p>No 10-Codes available.</p>';
 <div id="alert-spacer" class="h-0"></div>
 <!-- Alert Sound -->
 <audio id="alert-sound" src="/assets/sounds/alert.mp3" preload="auto"></audio>
+<!-- Notification Sound for new call assignments -->
+<audio id="notification-sound" src="/assets/sounds/notification.mp3" preload="auto"></audio>
 
 <!-- Sidebar -->
 <aside class="w-64 bg-gray-800 p-4 flex flex-col justify-between fixed h-full">
@@ -150,7 +152,7 @@ $content = $data[0]['content'] ?? '<p>No 10-Codes available.</p>';
     </div>
 
     <!-- Assigned Calls -->
-    <div class="bg-gray-800 rounded-2xl p-6 shadow-xl border border-gray-700 mt-12">
+    <div class="bg-gray-800 rounded-2xl p-6 shadow-xl border border-gray-700 mt-12 calls-section transition-colors duration-300">
       <h2 class="text-2xl font-semibold mb-6">Your Assigned Calls</h2>
 
       <div class="assigned-calls-container">
@@ -228,14 +230,41 @@ $content = $data[0]['content'] ?? '<p>No 10-Codes available.</p>';
     });
   }
 
+  // Track the number of assigned calls to detect changes
+  let previousCallCount = 0;
+
   // Function to refresh assigned calls
   function refreshAssignedCalls() {
-    fetch('get-assigned-calls.php')
+    // Add a cache-busting parameter to prevent browser caching since we're calling frequently
+    fetch('get-assigned-calls.php?_=' + Date.now())
       .then(response => response.json())
       .then(data => {
         if (data.success && data.calls) {
           // Update the UI with the new calls
           const callsContainer = document.querySelector('.assigned-calls-container');
+          const callsSection = document.querySelector('.calls-section');
+
+          // Check if the number of calls has increased (new assignment)
+          if (data.calls.length > previousCallCount) {
+            // Flash the calls section to indicate new assignment
+            if (callsSection) {
+              callsSection.classList.add('bg-blue-900');
+              setTimeout(() => {
+                callsSection.classList.remove('bg-blue-900');
+              }, 1000);
+
+              // Play notification sound
+              const notificationSound = document.getElementById('notification-sound');
+              if (notificationSound) {
+                notificationSound.currentTime = 0;
+                notificationSound.play().catch(e => console.error('Error playing notification sound:', e));
+              }
+            }
+          }
+
+          // Update the previous count
+          previousCallCount = data.calls.length;
+
           if (callsContainer) {
             if (data.calls.length === 0) {
               callsContainer.innerHTML = '<p class="text-gray-400">You have no assigned calls at the moment.</p>';
@@ -296,8 +325,8 @@ $content = $data[0]['content'] ?? '<p>No 10-Codes available.</p>';
       .replace(/'/g, "&#039;");
   }
 
-  // Refresh calls every 30 seconds
-  setInterval(refreshAssignedCalls, 30000);
+  // Refresh calls every 3 seconds
+  setInterval(refreshAssignedCalls, 3000);
 </script>
 
 <?php include '../partials/penal-modal.php'; ?>
