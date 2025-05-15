@@ -255,6 +255,17 @@ $active_calls = json_decode($callRes, true) ?? [];
         <label class="block text-sm mb-1 text-gray-300">Postal</label>
         <input type="text" name="postal" id="edit-postal" class="w-full px-4 py-2 rounded bg-gray-700 border border-gray-600">
       </div>
+      <div>
+        <label class="block text-sm mb-1 text-gray-300">Assign Units</label>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-48 overflow-y-auto pr-2 scrollbar bg-gray-700 p-3 rounded" id="edit-unit-checkboxes">
+          <?php foreach ($active_units as $unit): ?>
+            <label class="flex items-center space-x-2">
+              <input type="checkbox" name="units[]" value="<?= htmlspecialchars($unit['user_id']) ?>" class="edit-unit-checkbox accent-blue-500">
+              <span><?= htmlspecialchars("{$unit['callsign']} - {$unit['department']} ({$unit['status']})") ?></span>
+            </label>
+          <?php endforeach; ?>
+        </div>
+      </div>
       <div class="flex justify-between mt-6">
         <button type="button" onclick="closeEditModal()" class="text-gray-300 hover:text-white">Cancel</button>
         <button type="submit" class="bg-yellow-600 hover:bg-yellow-700 px-5 py-2 rounded font-semibold">Save</button>
@@ -262,6 +273,7 @@ $active_calls = json_decode($callRes, true) ?? [];
     </form>
   </div>
 </div>
+
 
 
 <script>
@@ -357,12 +369,19 @@ $active_calls = json_decode($callRes, true) ?? [];
       alert('Error: ' + err.message);
     });
   });
-  function openEditModal(id, call) {
+function openEditModal(id, call) {
   document.getElementById('edit-call-id').value = id;
   document.getElementById('edit-title').value = call.title || '';
   document.getElementById('edit-description').value = call.description || '';
   document.getElementById('edit-location').value = call.location || '';
   document.getElementById('edit-postal').value = call.postal || '';
+
+  // Pre-check units
+  const selectedUnits = (call.units || '').split(',').map(u => u.trim());
+  document.querySelectorAll('.edit-unit-checkbox').forEach(cb => {
+    cb.checked = selectedUnits.includes(cb.value);
+  });
+
   document.getElementById('editCallModal').classList.remove('hidden');
 }
 
@@ -385,17 +404,18 @@ document.getElementById('editCallForm').addEventListener('submit', function (e) 
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: params.toString()
   })
-    .then(res => res.json())
-    .then(data => {
-      if (data.success) {
-        closeEditModal();
-        location.reload();
-      } else {
-        alert('Failed to update call');
-      }
-    })
-    .catch(err => alert('Error: ' + err.message));
+  .then(res => res.json())
+  .then(data => {
+    if (data.success) {
+      closeEditModal();
+      location.reload();
+    } else {
+      alert('Failed to update call');
+    }
+  })
+  .catch(err => alert('Error: ' + err.message));
 });
+
 
 </script>
 

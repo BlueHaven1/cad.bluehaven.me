@@ -18,12 +18,17 @@ if (!$id || !$title || !$description || !$location) {
     exit;
 }
 
+$units = $_POST['units'] ?? [];
+$unitList = is_array($units) ? implode(',', array_map('trim', $units)) : null;
+
 $data = [
     'title' => $title,
     'description' => $description,
     'location' => $location,
-    'postal' => $postal
+    'postal' => $postal,
+    'units' => $unitList
 ];
+
 
 [$res, $code] = supabaseRequest("calls?id=eq.$id", "PATCH", $data);
 
