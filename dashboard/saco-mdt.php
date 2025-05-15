@@ -74,14 +74,25 @@ $active_units = json_decode($unitRes, true) ?? [];
         <div><p class="text-sm text-gray-400 uppercase mb-1">Username</p><p class="text-xl font-semibold"><?= htmlspecialchars($username) ?></p></div>
         <div><p class="text-sm text-gray-400 uppercase mb-1">Department</p><p class="text-xl font-semibold">San Andreas Communications</p></div>
         <div><p class="text-sm text-gray-400 uppercase mb-1">Callsign</p><p class="text-xl font-semibold"><?= htmlspecialchars($callsign) ?></p></div>
-        <div class="col-span-full mt-4">
-          <p class="text-sm text-gray-400 uppercase mb-1">Status</p>
-          <div class="flex flex-wrap gap-2 mt-2">
-            <?php foreach (['10-8', '10-6', '10-7'] as $opt): ?>
-              <button onclick="updateStatus('<?= $opt ?>')" class="<?= $status === $opt ? 'bg-green-600 text-white ring-2 ring-green-400' : 'bg-gray-700 hover:bg-gray-600 text-white' ?> px-4 py-2 rounded text-sm"><?= $opt ?></button>
-            <?php endforeach; ?>
-          </div>
-        </div>
+<div class="col-span-full mt-4 flex justify-between items-start flex-wrap gap-4">
+  <!-- Status controls (left) -->
+  <div>
+    <p class="text-sm text-gray-400 uppercase mb-1">Status</p>
+    <div class="flex flex-wrap gap-2 mt-2">
+      <?php foreach (['10-8', '10-6', '10-7'] as $opt): ?>
+        <button onclick="updateStatus('<?= $opt ?>')" class="<?= $status === $opt ? 'bg-green-600 text-white ring-2 ring-green-400' : 'bg-gray-700 hover:bg-gray-600 text-white' ?> px-4 py-2 rounded text-sm"><?= $opt ?></button>
+      <?php endforeach; ?>
+    </div>
+  </div>
+
+  <!-- Create Call Button (right) -->
+  <div class="mt-1">
+    <button class="bg-blue-600 hover:bg-blue-700 text-sm px-5 py-2 rounded font-semibold">
+      + Create a Call
+    </button>
+  </div>
+</div>
+
       </div>
     </div>
 
