@@ -15,6 +15,7 @@ $username = $_SESSION['username'] ?? 'Unknown';
 $department = $_SESSION['department'] ?? 'SACO';
 $callsign = $_SESSION['callsign'] ?? 'None';
 
+// Penal code & 10-codes
 [$titlesResp] = supabaseRequest("penal_titles", "GET");
 $penal_titles = json_decode($titlesResp, true) ?? [];
 
@@ -23,8 +24,8 @@ $penal_sections = json_decode($sectionsResp, true) ?? [];
 
 $sections_by_title = [];
 foreach ($penal_titles as $title) {
-  $tid = $title['id'];
-  $sections_by_title[$tid] = array_filter($penal_sections, fn($s) => $s['title_id'] == $tid);
+    $tid = $title['id'];
+    $sections_by_title[$tid] = array_filter($penal_sections, fn($s) => $s['title_id'] == $tid);
 }
 
 [$res] = supabaseRequest("ten_codes?id=eq.1", "GET");
@@ -33,6 +34,17 @@ $content = $data[0]['content'] ?? '<p>No 10-Codes available.</p>';
 
 [$unitRes] = supabaseRequest("unit_status", "GET");
 $active_units = json_decode($unitRes, true) ?? [];
+
+// Fetch Active Calls with Assigned Units
+[$callRes] = supabaseRequest("calls?order=created_at.desc", "GET");
+$calls = json_decode($callRes, true) ?? [];
+
+$call_units_map = [];
+foreach ($calls as $call) {
+    $call_id = $call['id'];
+    [$unitsRes] = supabaseRequest("call_units?call_id=eq.$call_id", "GET");
+    $call_units_map[$call_id] = json_decode($unitsRes, true) ?? [];
+}
 ?>
 
 <!DOCTYPE html>
@@ -42,13 +54,8 @@ $active_units = json_decode($unitRes, true) ?? [];
   <title>SACO Dispatcher MDT</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    .scrollbar::-webkit-scrollbar {
-      width: 6px;
-    }
-    .scrollbar::-webkit-scrollbar-thumb {
-      background: #4B5563;
-      border-radius: 4px;
-    }
+    .scrollbar::-webkit-scrollbar { width: 6px; }
+    .scrollbar::-webkit-scrollbar-thumb { background: #4B5563; border-radius: 4px; }
   </style>
 </head>
 <body class="bg-gray-900 text-white flex min-h-screen">
@@ -75,30 +82,14 @@ $active_units = json_decode($unitRes, true) ?? [];
     <div class="bg-gray-800 rounded-2xl p-8 shadow-xl border border-gray-700">
       <h2 class="text-2xl font-semibold mb-6">Dispatcher Info</h2>
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        <div>
-          <p class="text-sm text-gray-400 uppercase mb-1">Username</p>
-          <p class="text-xl font-semibold"><?= htmlspecialchars($username) ?></p>
-        </div>
-        <div>
-          <p class="text-sm text-gray-400 uppercase mb-1">Department</p>
-          <p class="text-xl font-semibold">San Andreas Communications</p>
-        </div>
-        <div>
-          <p class="text-sm text-gray-400 uppercase mb-1">Callsign</p>
-          <p class="text-xl font-semibold"><?= htmlspecialchars($callsign) ?></p>
-        </div>
+        <div><p class="text-sm text-gray-400 uppercase mb-1">Username</p><p class="text-xl font-semibold"><?= htmlspecialchars($username) ?></p></div>
+        <div><p class="text-sm text-gray-400 uppercase mb-1">Department</p><p class="text-xl font-semibold">San Andreas Communications</p></div>
+        <div><p class="text-sm text-gray-400 uppercase mb-1">Callsign</p><p class="text-xl font-semibold"><?= htmlspecialchars($callsign) ?></p></div>
         <div class="col-span-full mt-4">
           <p class="text-sm text-gray-400 uppercase mb-1">Status</p>
           <div class="flex flex-wrap gap-2 mt-2">
-            <?php
-              $statuses = ['10-8', '10-6', '10-7'];
-              foreach ($statuses as $opt):
-                $isActive = $status === $opt;
-                $classes = $isActive
-                  ? 'bg-green-600 text-white ring-2 ring-green-400'
-                  : 'bg-gray-700 hover:bg-gray-600 text-white';
-            ?>
-              <button onclick="updateStatus('<?= $opt ?>')" class="<?= $classes ?> px-4 py-2 rounded text-sm"><?= $opt ?></button>
+            <?php foreach (['10-8', '10-6', '10-7'] as $opt): ?>
+              <button onclick="updateStatus('<?= $opt ?>')" class="<?= $status === $opt ? 'bg-green-600 text-white ring-2 ring-green-400' : 'bg-gray-700 hover:bg-gray-600 text-white' ?> px-4 py-2 rounded text-sm"><?= $opt ?></button>
             <?php endforeach; ?>
           </div>
         </div>
@@ -127,42 +118,67 @@ $active_units = json_decode($unitRes, true) ?? [];
     </div>
 
     <!-- Create Call Panel -->
-<!-- Create Call Panel -->
-<div class="bg-gray-800 rounded-2xl p-6 shadow-xl border border-gray-700 mt-12">
-  <h2 class="text-2xl font-semibold mb-6">Create New Call</h2>
-  <form method="POST" action="../includes/create-call.php" class="space-y-4">
-    <div>
-      <label class="block text-sm mb-1 text-gray-300">Title</label>
-      <input type="text" name="title" required class="w-full px-4 py-2 rounded bg-gray-700 border border-gray-600 focus:outline-none">
+    <div class="bg-gray-800 rounded-2xl p-6 shadow-xl border border-gray-700 mt-12">
+      <h2 class="text-2xl font-semibold mb-6">Create New Call</h2>
+      <form method="POST" action="../includes/create-call.php" class="space-y-4">
+        <div>
+          <label class="block text-sm mb-1 text-gray-300">Title</label>
+          <input type="text" name="title" required class="w-full px-4 py-2 rounded bg-gray-700 border border-gray-600 focus:outline-none">
+        </div>
+        <div>
+          <label class="block text-sm mb-1 text-gray-300">Location</label>
+          <input type="text" name="location" required class="w-full px-4 py-2 rounded bg-gray-700 border border-gray-600 focus:outline-none">
+        </div>
+        <div>
+          <label class="block text-sm mb-1 text-gray-300">Postal</label>
+          <input type="text" name="postal" class="w-full px-4 py-2 rounded bg-gray-700 border border-gray-600 focus:outline-none">
+        </div>
+        <div>
+          <label class="block text-sm mb-1 text-gray-300">Description</label>
+          <textarea name="description" rows="4" required class="w-full px-4 py-2 rounded bg-gray-700 border border-gray-600 focus:outline-none"></textarea>
+        </div>
+        <div>
+          <label class="block text-sm mb-1 text-gray-300">Assign Units</label>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 max-h-60 overflow-y-auto pr-2 scrollbar">
+            <?php foreach ($active_units as $unit): ?>
+              <label class="flex items-center space-x-2 bg-gray-700 px-3 py-2 rounded">
+                <input type="checkbox" name="units[]" value="<?= htmlspecialchars($unit['user_id']) ?>" class="accent-blue-500">
+                <span><?= htmlspecialchars("{$unit['callsign']} - {$unit['department']} ({$unit['status']})") ?></span>
+              </label>
+            <?php endforeach; ?>
+          </div>
+        </div>
+        <button type="submit" class="bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded font-semibold">Create Call</button>
+      </form>
     </div>
-    <div>
-      <label class="block text-sm mb-1 text-gray-300">Location</label>
-      <input type="text" name="location" required class="w-full px-4 py-2 rounded bg-gray-700 border border-gray-600 focus:outline-none">
+
+    <!-- Active Calls -->
+    <div class="bg-gray-800 rounded-2xl p-6 shadow-xl border border-gray-700 mt-12">
+      <h2 class="text-2xl font-semibold mb-6">Active Calls</h2>
+      <?php if (!empty($calls)): ?>
+        <div class="space-y-6">
+          <?php foreach ($calls as $call): ?>
+            <div class="bg-gray-700 rounded-lg p-4 border border-gray-600">
+              <h3 class="text-xl font-bold mb-1"><?= htmlspecialchars($call['title']) ?></h3>
+              <p class="text-sm text-gray-400 mb-2"><?= htmlspecialchars($call['description']) ?></p>
+              <div class="text-sm text-gray-300">
+                <p><strong>Location:</strong> <?= htmlspecialchars($call['location']) ?><?= $call['postal'] ? ' (Postal: ' . htmlspecialchars($call['postal']) . ')' : '' ?></p>
+                <p><strong>Assigned Units:</strong>
+                  <?php
+                    $assigned = $call_units_map[$call['id']] ?? [];
+                    echo empty($assigned)
+                      ? '<span class="text-gray-400">None</span>'
+                      : implode(', ', array_map(fn($u) => $u['user_id'], $assigned));
+                  ?>
+                </p>
+              </div>
+            </div>
+          <?php endforeach; ?>
+        </div>
+      <?php else: ?>
+        <p class="text-gray-400">No active calls.</p>
+      <?php endif; ?>
     </div>
-    <div>
-      <label class="block text-sm mb-1 text-gray-300">Postal</label>
-      <input type="text" name="postal" class="w-full px-4 py-2 rounded bg-gray-700 border border-gray-600 focus:outline-none">
-    </div>
-    <div>
-      <label class="block text-sm mb-1 text-gray-300">Description</label>
-      <textarea name="description" rows="4" required class="w-full px-4 py-2 rounded bg-gray-700 border border-gray-600 focus:outline-none"></textarea>
-    </div>
-    <div>
-      <label class="block text-sm mb-1 text-gray-300">Assign Units</label>
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 max-h-60 overflow-y-auto pr-2 scrollbar">
-        <?php foreach ($active_units as $unit): ?>
-          <label class="flex items-center space-x-2 bg-gray-700 px-3 py-2 rounded">
-            <input type="checkbox" name="units[]" value="<?= htmlspecialchars($unit['user_id']) ?>" class="accent-blue-500">
-            <span><?= htmlspecialchars("{$unit['callsign']} - {$unit['department']} ({$unit['status']})") ?></span>
-          </label>
-        <?php endforeach; ?>
-      </div>
-    </div>
-    <button type="submit" class="bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded font-semibold">
-      Create Call
-    </button>
-  </form>
-</div>
 
   </div>
 </main>
@@ -171,7 +187,7 @@ $active_units = json_decode($unitRes, true) ?? [];
   function updateStatus(status) {
     fetch('update-status.php', {
       method: 'POST',
-      headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: 'status=' + encodeURIComponent(status)
     })
     .then(res => res.json())
