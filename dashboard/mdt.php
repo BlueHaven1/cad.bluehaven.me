@@ -12,6 +12,7 @@ $status = $_SESSION['status'] ?? '10-7';
 $username = $_SESSION['username'] ?? 'Unknown';
 $department = $_SESSION['department'] ?? 'N/A';
 $callsign = $_SESSION['callsign'] ?? 'None';
+$userId = $_SESSION['user_id'];
 
 // Preload penal code data for modals
 [$titlesResp] = supabaseRequest("penal_titles", "GET");
@@ -24,6 +25,29 @@ $sections_by_title = [];
 foreach ($penal_titles as $title) {
   $tid = $title['id'];
   $sections_by_title[$tid] = array_filter($penal_sections, fn($s) => $s['title_id'] == $tid);
+}
+
+// Fetch active calls
+[$callRes] = supabaseRequest("calls?order=created_at.desc", "GET");
+$all_calls = json_decode($callRes, true) ?? [];
+
+// Filter calls assigned to this user
+$assigned_calls = [];
+foreach ($all_calls as $call) {
+  $unitList = explode(',', $call['units'] ?? '');
+  if (in_array($userId, $unitList)) {
+    $assigned_calls[] = $call;
+  }
+}
+
+// Fetch units for display
+[$unitRes] = supabaseRequest("unit_status", "GET");
+$active_units = json_decode($unitRes, true) ?? [];
+
+// Map user_id => unit info
+$unitMap = [];
+foreach ($active_units as $unit) {
+  $unitMap[$unit['user_id']] = $unit;
 }
 
 // Preload 10-Codes content
@@ -120,8 +144,62 @@ $content = $data[0]['content'] ?? '<p>No 10-Codes available.</p>';
       </div>
     </div>
 
-    <div class="mt-12 text-center text-gray-500 text-sm">
-      Add more MDT tools. Noted
+    <!-- Assigned Calls -->
+    <div class="bg-gray-800 rounded-2xl p-6 shadow-xl border border-gray-700 mt-12">
+      <h2 class="text-2xl font-semibold mb-6">Your Assigned Calls</h2>
+
+      <div class="assigned-calls-container">
+        <?php if (!empty($assigned_calls)): ?>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm text-gray-300">
+              <thead class="bg-gray-700 text-gray-400 text-sm">
+                <tr>
+                  <th class="px-4 py-2">Title</th>
+                  <th class="px-4 py-2">Description</th>
+                  <th class="px-4 py-2">Location</th>
+                  <th class="px-4 py-2">Postal</th>
+                  <th class="px-4 py-2">Units</th>
+                </tr>
+              </thead>
+              <tbody>
+                <?php foreach ($assigned_calls as $call): ?>
+                  <tr class="border-b border-gray-700">
+                    <td class="px-4 py-2 font-medium text-white"><?= htmlspecialchars($call['title']) ?></td>
+                    <td class="px-4 py-2">
+                      <div class="max-w-xs overflow-hidden text-ellipsis">
+                        <?= htmlspecialchars(substr($call['description'], 0, 100)) ?><?= strlen($call['description']) > 100 ? '...' : '' ?>
+                      </div>
+                    </td>
+                    <td class="px-4 py-2"><?= htmlspecialchars($call['location']) ?></td>
+                    <td class="px-4 py-2"><?= htmlspecialchars($call['postal'] ?: '-') ?></td>
+                    <td class="px-4 py-2">
+                      <?php
+                        $unitList = explode(',', $call['units'] ?? '');
+                        if (empty($unitList[0])) {
+                          echo '<span class="text-gray-400">None</span>';
+                        } else {
+                          $displayUnits = [];
+                          foreach ($unitList as $uid) {
+                            $uid = trim($uid);
+                            if (isset($unitMap[$uid])) {
+                              $displayUnits[] = htmlspecialchars($unitMap[$uid]['callsign']);
+                            } else {
+                              $displayUnits[] = htmlspecialchars($uid);
+                            }
+                          }
+                          echo implode(', ', $displayUnits);
+                        }
+                      ?>
+                    </td>
+                  </tr>
+                <?php endforeach; ?>
+              </tbody>
+            </table>
+          </div>
+        <?php else: ?>
+          <p class="text-gray-400">You have no assigned calls at the moment.</p>
+        <?php endif; ?>
+      </div>
     </div>
   </div>
 </main>
@@ -144,6 +222,77 @@ $content = $data[0]['content'] ?? '<p>No 10-Codes available.</p>';
       }
     });
   }
+
+  // Function to refresh assigned calls
+  function refreshAssignedCalls() {
+    fetch('get-assigned-calls.php')
+      .then(response => response.json())
+      .then(data => {
+        if (data.success && data.calls) {
+          // Update the UI with the new calls
+          const callsContainer = document.querySelector('.assigned-calls-container');
+          if (callsContainer) {
+            if (data.calls.length === 0) {
+              callsContainer.innerHTML = '<p class="text-gray-400">You have no assigned calls at the moment.</p>';
+            } else {
+              // Create table HTML
+              let tableHtml = `
+                <div class="overflow-x-auto">
+                  <table class="w-full text-left text-sm text-gray-300">
+                    <thead class="bg-gray-700 text-gray-400 text-sm">
+                      <tr>
+                        <th class="px-4 py-2">Title</th>
+                        <th class="px-4 py-2">Description</th>
+                        <th class="px-4 py-2">Location</th>
+                        <th class="px-4 py-2">Postal</th>
+                        <th class="px-4 py-2">Units</th>
+                      </tr>
+                    </thead>
+                    <tbody>`;
+
+              // Add rows for each call
+              data.calls.forEach(call => {
+                tableHtml += `
+                  <tr class="border-b border-gray-700">
+                    <td class="px-4 py-2 font-medium text-white">${escapeHtml(call.title)}</td>
+                    <td class="px-4 py-2">
+                      <div class="max-w-xs overflow-hidden text-ellipsis">
+                        ${escapeHtml(call.description.length > 100 ? call.description.substring(0, 100) + '...' : call.description)}
+                      </div>
+                    </td>
+                    <td class="px-4 py-2">${escapeHtml(call.location)}</td>
+                    <td class="px-4 py-2">${escapeHtml(call.postal)}</td>
+                    <td class="px-4 py-2">${escapeHtml(call.units)}</td>
+                  </tr>`;
+              });
+
+              // Close the table
+              tableHtml += `
+                    </tbody>
+                  </table>
+                </div>`;
+
+              // Update the container
+              callsContainer.innerHTML = tableHtml;
+            }
+          }
+        }
+      })
+      .catch(error => console.error('Error refreshing calls:', error));
+  }
+
+  // Helper function to escape HTML
+  function escapeHtml(unsafe) {
+    return unsafe
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
+
+  // Refresh calls every 30 seconds
+  setInterval(refreshAssignedCalls, 30000);
 </script>
 
 <?php include '../partials/penal-modal.php'; ?>
