@@ -98,28 +98,28 @@ $active_calls = json_decode($callRes, true) ?? [];
       <p class="text-xl font-semibold"><?= htmlspecialchars($callsign) ?></p>
     </div>
 
-    <!-- Status + Action Buttons Row -->
-    <div class="col-span-full mt-4 flex flex-wrap justify-between items-center gap-4">
-      <div>
-        <p class="text-sm text-gray-400 uppercase mb-1">Status</p>
-        <div class="flex flex-wrap gap-2 mt-2">
-          <?php foreach (['10-8', '10-6', '10-7'] as $opt): ?>
-            <button onclick="updateStatus('<?= $opt ?>')" class="<?= $status === $opt ? 'bg-green-600 text-white ring-2 ring-green-400' : 'bg-gray-700 hover:bg-gray-600 text-white' ?> px-4 py-2 rounded text-sm"><?= $opt ?></button>
-          <?php endforeach; ?>
-        </div>
-      </div>
-      <div class="flex flex-wrap gap-4">
-        <button id="openCreateCall" class="bg-blue-600 hover:bg-blue-700 text-sm px-5 py-2 rounded font-semibold">
-          + Create a Call
-        </button>
-        <button id="toggle-signal100" class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded font-semibold">
-          Toggle Signal 100
-        </button>
-        <button id="toggle-10-3" class="bg-yellow-500 hover:bg-yellow-600 px-4 py-2 rounded font-semibold text-black">
-          Toggle 10-3
-        </button>
-      </div>
+<!-- Status + Action Buttons Row -->
+<div class="col-span-full mt-4 flex flex-wrap justify-between items-start gap-4">
+  <div>
+    <p class="text-sm text-gray-400 uppercase mb-1">Status</p>
+    <div class="flex flex-wrap gap-2 mt-2">
+      <?php foreach (['10-8', '10-6', '10-7'] as $opt): ?>
+        <button onclick="updateStatus('<?= $opt ?>')" class="<?= $status === $opt ? 'bg-green-600 text-white ring-2 ring-green-400' : 'bg-gray-700 hover:bg-gray-600 text-white' ?> px-4 py-2 rounded text-sm"><?= $opt ?></button>
+      <?php endforeach; ?>
     </div>
+  </div>
+  <div class="flex flex-wrap gap-4 mt-6">
+    <button id="openCreateCall" class="bg-blue-600 hover:bg-blue-700 text-sm px-5 py-2 rounded font-semibold">
+      + Create a Call
+    </button>
+    <button id="toggle-signal100" class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded font-semibold">
+      Toggle Signal 100
+    </button>
+    <button id="toggle-10-3" class="bg-yellow-500 hover:bg-yellow-600 px-4 py-2 rounded font-semibold text-black">
+      Toggle 10-3
+    </button>
+  </div>
+</div>
   </div>
 </div>
 
