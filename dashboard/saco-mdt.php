@@ -44,6 +44,10 @@ foreach ($active_units as $unit) {
 // Fetch calls
 [$callRes] = supabaseRequest("calls?order=created_at.desc", "GET");
 $active_calls = json_decode($callRes, true) ?? [];
+
+// Fetch recent BOLOs
+[$boloRes] = supabaseRequest("bolos?order=created_at.desc&limit=5", "GET");
+$recent_bolos = json_decode($boloRes, true) ?? [];
 ?>
 
 <!DOCTYPE html>
@@ -74,6 +78,7 @@ $active_calls = json_decode($callRes, true) ?? [];
       <a href="saco-mdt.php" class="block px-3 py-2 rounded bg-gray-700">Dashboard</a>
       <a href="name-search.php?return=saco" class="block px-3 py-2 rounded hover:bg-gray-700">Name Search</a>
       <a href="plate-search.php?return=saco" class="block px-3 py-2 rounded hover:bg-gray-700">Plate Search</a>
+      <a href="bolos.php" class="block px-3 py-2 rounded hover:bg-gray-700">BOLOs</a>
     </nav>
   </div>
   <a href="exit-mdt.php" class="block px-3 py-2 mt-6 rounded bg-red-600 hover:bg-red-700 text-center font-semibold">
@@ -154,6 +159,45 @@ $active_calls = json_decode($callRes, true) ?? [];
         </div>
       </div>
     </div>
+
+<!-- Recent BOLOs -->
+<div class="bg-gray-800 rounded-2xl p-6 shadow-xl border border-gray-700 mt-12">
+  <div class="flex justify-between items-center mb-6">
+    <h2 class="text-2xl font-semibold">Recent BOLOs</h2>
+    <a href="bolos.php" class="text-blue-400 hover:text-blue-300 text-sm">View All BOLOs</a>
+  </div>
+
+  <?php if (!empty($recent_bolos)): ?>
+    <div class="overflow-x-auto">
+      <table class="w-full text-left text-sm text-gray-300">
+        <thead class="bg-gray-700 text-gray-400 text-sm">
+          <tr>
+            <th class="px-4 py-2">Type</th>
+            <th class="px-4 py-2">Description</th>
+            <th class="px-4 py-2">Last Seen</th>
+            <th class="px-4 py-2">Created At</th>
+          </tr>
+        </thead>
+        <tbody>
+          <?php foreach ($recent_bolos as $bolo): ?>
+            <tr class="border-b border-gray-700">
+              <td class="px-4 py-2 font-medium text-white"><?= htmlspecialchars($bolo['type']) ?></td>
+              <td class="px-4 py-2">
+                <div class="max-w-xs overflow-hidden text-ellipsis">
+                  <?= htmlspecialchars(substr($bolo['description'], 0, 100)) ?><?= strlen($bolo['description']) > 100 ? '...' : '' ?>
+                </div>
+              </td>
+              <td class="px-4 py-2"><?= htmlspecialchars($bolo['last_seen']) ?></td>
+              <td class="px-4 py-2"><?= date('m/d/Y H:i', strtotime($bolo['created_at'])) ?></td>
+            </tr>
+          <?php endforeach; ?>
+        </tbody>
+      </table>
+    </div>
+  <?php else: ?>
+    <p class="text-gray-400">No active BOLOs at the moment.</p>
+  <?php endif; ?>
+</div>
 
 <!-- Active Calls -->
 <div class="bg-gray-800 rounded-2xl p-6 shadow-xl border border-gray-700 mt-12">
