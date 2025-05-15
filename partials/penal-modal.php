@@ -23,7 +23,7 @@ if (!isset($penal_titles) || !isset($sections_by_title)) {
 </button>
 
 <!-- Modal -->
-<div id="penalModal" class="fixed inset-0 hidden flex items-center justify-center bg-black bg-opacity-50 z-50">
+<div id="penalModal" class="fixed inset-0 hidden flex items-center justify-center bg-black bg-opacity-50 z-50" onclick="closeModalOnOutsideClick(event, 'penalModal')">
   <div class="bg-gray-900 text-white w-full max-w-3xl max-h-[80vh] rounded-lg p-6 overflow-y-auto transform scale-95 opacity-0 transition-all duration-300 modal-inner">
     <div class="flex justify-between items-center mb-4">
       <h2 class="text-xl font-bold">Penal Code</h2>
@@ -31,7 +31,7 @@ if (!isset($penal_titles) || !isset($sections_by_title)) {
     </div>
 
     <div class="space-y-3">
-      <?php foreach ($penal_titles as $title): 
+      <?php foreach ($penal_titles as $title):
         $title_id = $title['id'];
         $title_sections = $sections_by_title[$title_id] ?? [];
       ?>
@@ -95,6 +95,23 @@ function toggleSection(id, button) {
   } else {
     section.style.maxHeight = section.scrollHeight + 'px';
     icon.textContent = '−';
+  }
+}
+
+function closeModalOnOutsideClick(event, modalId) {
+  const modal = document.getElementById(modalId);
+  const modalInner = modal.querySelector('.modal-inner');
+
+  // Check if the click was outside the modal content
+  if (event.target === modal) {
+    // If the modal ID is penalModal, call closePenalModal
+    if (modalId === 'penalModal') {
+      closePenalModal();
+    }
+    // If the modal ID is tenModal, call closeTenModal
+    else if (modalId === 'tenModal') {
+      closeTenModal();
+    }
   }
 }
 </script>

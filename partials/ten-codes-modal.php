@@ -11,7 +11,7 @@ $content = $data[0]['content'] ?? '<p>No 10-Codes available.</p>';
 </button>
 
 <!-- Modal -->
-<div id="tenModal" class="fixed inset-0 hidden flex items-center justify-center bg-black bg-opacity-50 z-50">
+<div id="tenModal" class="fixed inset-0 hidden flex items-center justify-center bg-black bg-opacity-50 z-50" onclick="closeModalOnOutsideClick(event, 'tenModal')">
   <div class="bg-gray-900 text-white w-full max-w-3xl max-h-[80vh] rounded-lg p-6 overflow-y-auto transform scale-95 opacity-0 transition-all duration-300 modal-inner">
     <div class="flex justify-between items-center mb-4">
       <h2 class="text-xl font-bold">10-Codes</h2>
@@ -42,5 +42,22 @@ function closeTenModal() {
     modal.classList.add('hidden');
     modal.classList.remove('flex');
   }, 300);
+}
+
+function closeModalOnOutsideClick(event, modalId) {
+  const modal = document.getElementById(modalId);
+  const modalInner = modal.querySelector('.modal-inner');
+
+  // Check if the click was outside the modal content
+  if (event.target === modal) {
+    // If the modal ID is penalModal, call closePenalModal
+    if (modalId === 'penalModal') {
+      closePenalModal();
+    }
+    // If the modal ID is tenModal, call closeTenModal
+    else if (modalId === 'tenModal') {
+      closeTenModal();
+    }
+  }
 }
 </script>
