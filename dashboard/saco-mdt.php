@@ -164,12 +164,21 @@ $active_calls = json_decode($callRes, true) ?? [];
                   }
                 ?>
               </td>
-              <td class="px-4 py-2">
-                <form method="POST" action="../includes/close-call.php" onsubmit="return confirm('Are you sure you want to close this call?');">
-                  <input type="hidden" name="id" value="<?= htmlspecialchars($call['id']) ?>">
-                  <button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm">Close</button>
-                </form>
-              </td>
+<td class="px-4 py-2 flex gap-2">
+  <!-- Edit -->
+  <button 
+    type="button" 
+    onclick="openEditModal('<?= $call['id'] ?>', <?= htmlspecialchars(json_encode($call)) ?>)" 
+    class="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded text-sm">
+    Edit
+  </button>
+
+  <!-- Close -->
+  <form method="POST" action="../includes/close-call.php" onsubmit="return confirm('Are you sure you want to close this call?');">
+    <input type="hidden" name="id" value="<?= htmlspecialchars($call['id']) ?>">
+    <button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm">Close</button>
+  </form>
+</td>
             </tr>
           <?php endforeach; ?>
         </tbody>
@@ -223,6 +232,37 @@ $active_calls = json_decode($callRes, true) ?? [];
     </form>
   </div>
 </div>
+
+<!-- Edit Call Modal -->
+<div id="editCallModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 hidden">
+  <div class="bg-gray-800 rounded-xl w-full max-w-xl p-6 shadow-xl border border-gray-700 relative">
+    <h2 class="text-2xl font-semibold mb-4">Edit Call</h2>
+    <form id="editCallForm" class="space-y-4">
+      <input type="hidden" name="id" id="edit-call-id">
+      <div>
+        <label class="block text-sm mb-1 text-gray-300">Title</label>
+        <input type="text" name="title" id="edit-title" required class="w-full px-4 py-2 rounded bg-gray-700 border border-gray-600">
+      </div>
+      <div>
+        <label class="block text-sm mb-1 text-gray-300">Description</label>
+        <textarea name="description" id="edit-description" rows="4" required class="w-full px-4 py-2 rounded bg-gray-700 border border-gray-600"></textarea>
+      </div>
+      <div>
+        <label class="block text-sm mb-1 text-gray-300">Location</label>
+        <input type="text" name="location" id="edit-location" required class="w-full px-4 py-2 rounded bg-gray-700 border border-gray-600">
+      </div>
+      <div>
+        <label class="block text-sm mb-1 text-gray-300">Postal</label>
+        <input type="text" name="postal" id="edit-postal" class="w-full px-4 py-2 rounded bg-gray-700 border border-gray-600">
+      </div>
+      <div class="flex justify-between mt-6">
+        <button type="button" onclick="closeEditModal()" class="text-gray-300 hover:text-white">Cancel</button>
+        <button type="submit" class="bg-yellow-600 hover:bg-yellow-700 px-5 py-2 rounded font-semibold">Save</button>
+      </div>
+    </form>
+  </div>
+</div>
+
 
 <script>
   function updateStatus(status) {
@@ -317,6 +357,46 @@ $active_calls = json_decode($callRes, true) ?? [];
       alert('Error: ' + err.message);
     });
   });
+  function openEditModal(id, call) {
+  document.getElementById('edit-call-id').value = id;
+  document.getElementById('edit-title').value = call.title || '';
+  document.getElementById('edit-description').value = call.description || '';
+  document.getElementById('edit-location').value = call.location || '';
+  document.getElementById('edit-postal').value = call.postal || '';
+  document.getElementById('editCallModal').classList.remove('hidden');
+}
+
+function closeEditModal() {
+  document.getElementById('editCallModal').classList.add('hidden');
+}
+
+document.getElementById('editCallForm').addEventListener('submit', function (e) {
+  e.preventDefault();
+
+  const form = e.target;
+  const formData = new FormData(form);
+  const params = new URLSearchParams();
+  for (const [key, value] of formData.entries()) {
+    params.append(key, value);
+  }
+
+  fetch('../includes/update-call.php', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: params.toString()
+  })
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        closeEditModal();
+        location.reload();
+      } else {
+        alert('Failed to update call');
+      }
+    })
+    .catch(err => alert('Error: ' + err.message));
+});
+
 </script>
 
 <?php include '../partials/penal-modal.php'; ?>
