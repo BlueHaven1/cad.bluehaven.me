@@ -38,8 +38,15 @@ $content = $data[0]['content'] ?? '<p>No 10-Codes available.</p>';
   <meta charset="UTF-8">
   <title>SAFR MDT - San Andreas CAD</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="/assets/js/alerts.js"></script>
 </head>
 <body class="bg-gray-900 text-white flex min-h-screen">
+<!-- Alert Banner -->
+<div id="alert-banner" class="w-full text-center text-white text-lg font-bold py-3 hidden fixed top-0 z-50"></div>
+<!-- Spacer for fixed header -->
+<div id="alert-spacer" class="h-0"></div>
+<!-- Alert Sound -->
+<audio id="alert-sound" src="/assets/sounds/alert.mp3" preload="auto"></audio>
 
 <!-- Sidebar -->
 <aside class="w-64 bg-gray-800 p-4 flex flex-col justify-between fixed h-full">

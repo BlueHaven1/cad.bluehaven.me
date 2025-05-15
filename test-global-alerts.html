@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Test Global Alerts</title>
+  <script src="/assets/js/alerts.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      line-height: 1.6;
+    }
+    .card {
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+      background-color: #f9f9f9;
+    }
+    button {
+      padding: 10px 15px;
+      margin: 10px 5px;
+      cursor: pointer;
+      background-color: #4a5568;
+      color: white;
+      border: none;
+      border-radius: 4px;
+    }
+    button:hover {
+      background-color: #2d3748;
+    }
+    .success {
+      color: green;
+      font-weight: bold;
+    }
+    .error {
+      color: red;
+      font-weight: bold;
+    }
+    .mdt-links {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    .mdt-links a {
+      display: block;
+      padding: 10px 15px;
+      background-color: #4299e1;
+      color: white;
+      text-decoration: none;
+      border-radius: 4px;
+    }
+    .mdt-links a:hover {
+      background-color: #3182ce;
+    }
+  </style>
+</head>
+<body>
+  <!-- Alert Banner -->
+  <div id="alert-banner" class="w-full text-center text-white text-lg font-bold py-3 hidden fixed top-0 z-50"></div>
+  <!-- Spacer for fixed header -->
+  <div id="alert-spacer" class="h-0"></div>
+  <!-- Alert Sound -->
+  <audio id="alert-sound" src="/assets/sounds/alert.mp3" preload="auto"></audio>
+
+  <h1>Test Global Alerts System</h1>
+  
+  <p>This page tests the global alert sound functionality across all MDT pages.</p>
+  
+  <div class="mdt-links">
+    <a href="/dashboard/mdt.php">Open LEO MDT</a>
+    <a href="/dashboard/safr-mdt.php">Open SAFR MDT</a>
+    <a href="/dashboard/saco-mdt.php">Open SACO MDT</a>
+  </div>
+  
+  <div class="card">
+    <h2>Alert Controls</h2>
+    <p>Use these buttons to test the alert functionality:</p>
+    <button onclick="toggleAlert('signal100')">Toggle Signal 100</button>
+    <button onclick="toggleAlert('10-3')">Toggle 10-3</button>
+    <button onclick="playAlertSound()">Play Sound Once</button>
+    <button onclick="startAlertSound()">Start Repeating Sound</button>
+    <button onclick="stopAlertSound()">Stop Sound</button>
+  </div>
+  
+  <div class="card">
+    <h2>How It Works</h2>
+    <p>The alert system has been implemented globally across all MDT pages:</p>
+    <ul>
+      <li>When Signal 100 or 10-3 is activated, a banner appears at the top of all MDT pages</li>
+      <li>The alert sound plays immediately and repeats every 10 seconds</li>
+      <li>When all alerts are disabled, the sound stops playing</li>
+      <li>The system checks for active alerts every 5 seconds</li>
+    </ul>
+  </div>
+  
+  <div class="card">
+    <h2>Implementation Details</h2>
+    <p>The alert system consists of:</p>
+    <ul>
+      <li>A common JavaScript file (<code>/assets/js/alerts.js</code>) that handles all alert functionality</li>
+      <li>An audio element that plays the alert sound (<code>/assets/sounds/alert.mp3</code>)</li>
+      <li>Alert banner and spacer elements added to each MDT page</li>
+      <li>Integration with the existing alert toggle functionality in the SACO MDT</li>
+    </ul>
+  </div>
+</body>
+</html>

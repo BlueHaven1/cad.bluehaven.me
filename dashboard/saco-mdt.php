@@ -52,6 +52,7 @@ $active_calls = json_decode($callRes, true) ?? [];
   <meta charset="UTF-8">
   <title>SACO Dispatcher MDT</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="/assets/js/alerts.js"></script>
   <style>
     .scrollbar::-webkit-scrollbar { width: 6px; }
     .scrollbar::-webkit-scrollbar-thumb { background: #4B5563; border-radius: 4px; }
@@ -444,99 +445,13 @@ document.getElementById('editCallForm').addEventListener('submit', function (e) 
   })
   .catch(err => alert('Error: ' + err.message));
 });
-// Global variables for alert sound management
-let alertSoundInterval = null;
-let alertSound = null; // Will be initialized when DOM is loaded
-
-// Function to play alert sound
-function playAlertSound() {
-  if (alertSound) {
-    alertSound.currentTime = 0; // Reset to beginning
-    alertSound.play().catch(e => console.error('Error playing sound:', e));
-  }
-}
-
-// Function to start repeating alert sound
-function startAlertSound() {
-  // Clear any existing interval first
-  stopAlertSound();
-
-  // Play immediately
-  playAlertSound();
-
-  // Set up interval to play every 10 seconds
-  alertSoundInterval = setInterval(playAlertSound, 10000);
-}
-
-// Function to stop alert sound
-function stopAlertSound() {
-  if (alertSoundInterval) {
-    clearInterval(alertSoundInterval);
-    alertSoundInterval = null;
-  }
-}
-
-function loadAlerts() {
-  fetch('../includes/get-alerts.php')
-    .then(res => res.json())
-    .then(alerts => {
-      const banner = document.getElementById('alert-banner');
-      const spacer = document.getElementById('alert-spacer');
-
-      const active = alerts.filter(a => a.status);
-      if (active.length === 0) {
-        banner.classList.add('hidden');
-        spacer.classList.add('h-0');
-        stopAlertSound(); // Stop sound when no active alerts
-        return;
-      }
-
-      const messages = active.map(alert => {
-        return alert.type === 'signal100'
-          ? '🚨 SIGNAL 100 IS IN EFFECT'
-          : '🔇 10-3 RADIO SILENCE IN EFFECT';
-      });
-
-      banner.textContent = messages.join(' | ');
-      banner.className = 'w-full text-center text-white text-lg font-bold py-3 fixed top-0 z-50 bg-red-600';
-      spacer.className = 'h-14'; // reserve space for banner
-
-      // If we have active alerts, make sure sound is playing
-      if (!alertSoundInterval) {
-        startAlertSound();
-      }
-    });
-}
-// Set up interval to check alerts every 5 seconds
-setInterval(loadAlerts, 5000);
-
 document.addEventListener('DOMContentLoaded', () => {
-  // Initialize audio element reference
-  alertSound = document.getElementById('alert-sound');
-
   // Add event listeners for alert toggle buttons
   document.getElementById('toggle-signal100')?.addEventListener('click', () => toggleAlert('signal100'));
   document.getElementById('toggle-10-3')?.addEventListener('click', () => toggleAlert('10-3'));
-
-  // Check if there are active alerts on page load
-  loadAlerts();
 });
 
-function toggleAlert(type) {
-  fetch('../includes/toggle-alert.php', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: `type=${encodeURIComponent(type)}`
-  })
-  .then(res => res.json())
-  .then(data => {
-    if (data.success) {
-      loadAlerts(); // Refresh banner if successful
-    } else {
-      alert('Failed to toggle alert.');
-    }
-  });
-}
+// toggleAlert function is now in alerts.js
 
 
 
