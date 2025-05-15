@@ -98,6 +98,18 @@ $active_calls = json_decode($callRes, true) ?? [];
               + Create a Call
             </button>
           </div>
+          <!-- Signal 100 & 10-3 Alert Buttons -->
+<div class="mt-6 space-x-4">
+  <button id="toggle-signal100" class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded font-semibold">
+    Toggle Signal 100
+  </button>
+  <button id="toggle-10-3" class="bg-yellow-500 hover:bg-yellow-600 px-4 py-2 rounded font-semibold text-black">
+    Toggle 10-3
+  </button>
+</div>
+
+<!-- Active Alerts Display -->
+<div id="alert-status" class="mt-4 space-y-2 text-lg font-medium"></div>
         </div>
       </div>
     </div>
