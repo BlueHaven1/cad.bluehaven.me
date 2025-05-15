@@ -144,7 +144,7 @@ $active_calls = json_decode($callRes, true) ?? [];
     foreach ($unitList as $uid) {
       $uid = trim($uid);
       if (isset($unitMap[$uid])) {
-        $displayUnits[] = htmlspecialchars($unitMap[$uid]['callsign'] . ' - ' . $unitMap[$uid]['username']);
+$displayUnits[] = htmlspecialchars($unitMap[$uid]['callsign']);
       } else {
         $displayUnits[] = htmlspecialchars($uid); // fallback if unit not found
       }
