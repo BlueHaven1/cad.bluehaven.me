@@ -456,7 +456,30 @@ function loadAlerts() {
       spacer.className = 'h-14'; // reserve space for banner
     });
 }
+// Load alerts immediately and then every 5 seconds
+loadAlerts();
+setInterval(loadAlerts, 5000);
 
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('toggle-signal100')?.addEventListener('click', () => toggleAlert('signal100'));
+  document.getElementById('toggle-10-3')?.addEventListener('click', () => toggleAlert('10-3'));
+});
+
+function toggleAlert(type) {
+  fetch('../includes/toggle-alert.php', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: `type=${encodeURIComponent(type)}`
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.success) {
+      loadAlerts(); // Refresh banner if successful
+    } else {
+      alert('Failed to toggle alert.');
+    }
+  });
+}
 
 
 
