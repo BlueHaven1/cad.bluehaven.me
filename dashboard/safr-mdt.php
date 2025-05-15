@@ -155,7 +155,12 @@ $content = $data[0]['content'] ?? '<p>No 10-Codes available.</p>';
 
     <!-- Assigned Calls -->
     <div class="bg-gray-800 rounded-2xl p-6 shadow-xl border border-gray-700 mt-12 calls-section transition-colors duration-300">
-      <h2 class="text-2xl font-semibold mb-6">Your Assigned Calls</h2>
+      <div class="flex justify-between items-center mb-6">
+        <h2 class="text-2xl font-semibold">Your Assigned Calls</h2>
+        <button id="test-sound-btn" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded text-sm">
+          Test Call Sound
+        </button>
+      </div>
 
       <div class="assigned-calls-container">
         <?php if (!empty($assigned_calls)): ?>
@@ -233,7 +238,7 @@ $content = $data[0]['content'] ?? '<p>No 10-Codes available.</p>';
   }
 
   // Track the number of assigned calls to detect changes
-  let previousCallCount = 0;
+  let previousCallCount = <?php echo count($assigned_calls); ?>;
 
   // Function to refresh assigned calls
   function refreshAssignedCalls() {
@@ -247,7 +252,9 @@ $content = $data[0]['content'] ?? '<p>No 10-Codes available.</p>';
           const callsSection = document.querySelector('.calls-section');
 
           // Check if the number of calls has increased (new assignment)
+          console.log('Call check - Previous: ' + previousCallCount + ', Current: ' + data.calls.length);
           if (data.calls.length > previousCallCount) {
+            console.log('New call detected! Playing sound...');
             // Flash the calls section to indicate new assignment
             if (callsSection) {
               callsSection.classList.add('bg-blue-900');
@@ -258,8 +265,14 @@ $content = $data[0]['content'] ?? '<p>No 10-Codes available.</p>';
               // Play call assignment sound
               const assigncallSound = document.getElementById('assigncall-sound');
               if (assigncallSound) {
+                console.log('Sound element found, attempting to play...');
                 assigncallSound.currentTime = 0;
-                assigncallSound.play().catch(e => console.error('Error playing call assignment sound:', e));
+                assigncallSound.volume = 1.0; // Ensure volume is at maximum
+                assigncallSound.play()
+                  .then(() => console.log('Sound played successfully!'))
+                  .catch(e => console.error('Error playing call assignment sound:', e));
+              } else {
+                console.error('Sound element not found!');
               }
             }
           }
@@ -329,6 +342,74 @@ $content = $data[0]['content'] ?? '<p>No 10-Codes available.</p>';
 
   // Refresh calls every 3 seconds
   setInterval(refreshAssignedCalls, 3000);
+
+  // Function to preload the sound file
+  function preloadSound(audioElement) {
+    return new Promise((resolve, reject) => {
+      if (!audioElement) {
+        reject(new Error('Audio element not found'));
+        return;
+      }
+
+      // Create a new XMLHttpRequest to load the audio file
+      const xhr = new XMLHttpRequest();
+      xhr.open('GET', audioElement.src, true);
+      xhr.responseType = 'blob';
+
+      xhr.onload = function() {
+        if (this.status === 200) {
+          // Create a blob URL from the downloaded file
+          const blob = new Blob([this.response], { type: 'audio/mpeg' });
+          const blobUrl = URL.createObjectURL(blob);
+
+          // Update the audio element's src to the blob URL
+          audioElement.src = blobUrl;
+          console.log('Sound file preloaded successfully');
+          resolve();
+        } else {
+          console.error('Failed to preload sound file:', this.status);
+          reject(new Error(`Failed to preload sound file: ${this.status}`));
+        }
+      };
+
+      xhr.onerror = function() {
+        console.error('Error during sound file preload');
+        reject(new Error('Error during sound file preload'));
+      };
+
+      xhr.send();
+    });
+  }
+
+  // Add event listener for test sound button and preload sounds
+  document.addEventListener('DOMContentLoaded', () => {
+    // Preload the sound file
+    const assigncallSound = document.getElementById('assigncall-sound');
+    if (assigncallSound) {
+      console.log('Preloading sound file...');
+      preloadSound(assigncallSound)
+        .then(() => console.log('Sound preloaded and ready to play'))
+        .catch(e => console.error('Error preloading sound:', e));
+    }
+
+    // Set up test button
+    const testSoundBtn = document.getElementById('test-sound-btn');
+    if (testSoundBtn) {
+      testSoundBtn.addEventListener('click', () => {
+        console.log('Test sound button clicked');
+        if (assigncallSound) {
+          console.log('Sound element found, attempting to play...');
+          assigncallSound.currentTime = 0;
+          assigncallSound.volume = 1.0;
+          assigncallSound.play()
+            .then(() => console.log('Sound played successfully!'))
+            .catch(e => console.error('Error playing call assignment sound:', e));
+        } else {
+          console.error('Sound element not found!');
+        }
+      });
+    }
+  });
 </script>
 
 <?php include '../partials/penal-modal.php'; ?>
