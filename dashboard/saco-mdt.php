@@ -136,6 +136,7 @@ $active_calls = json_decode($callRes, true) ?? [];
             <th class="px-4 py-2">Location</th>
             <th class="px-4 py-2">Postal</th>
             <th class="px-4 py-2">Units</th>
+            <th class="px-4 py-2">Action</th>
           </tr>
         </thead>
         <tbody>
@@ -163,6 +164,12 @@ $active_calls = json_decode($callRes, true) ?? [];
                   }
                 ?>
               </td>
+              <td class="px-4 py-2">
+                <form method="POST" action="../includes/close-call.php" onsubmit="return confirm('Are you sure you want to close this call?');">
+                  <input type="hidden" name="id" value="<?= htmlspecialchars($call['id']) ?>">
+                  <button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm">Close</button>
+                </form>
+              </td>
             </tr>
           <?php endforeach; ?>
         </tbody>
@@ -172,6 +179,7 @@ $active_calls = json_decode($callRes, true) ?? [];
     <p class="text-gray-400">No active calls at the moment.</p>
   <?php endif; ?>
 </div>
+
 
   </div>
 </main>
