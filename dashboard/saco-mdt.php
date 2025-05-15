@@ -427,6 +427,45 @@ document.getElementById('editCallForm').addEventListener('submit', function (e) 
   })
   .catch(err => alert('Error: ' + err.message));
 });
+function toggleAlert(type) {
+  fetch('../includes/toggle-alert.php', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ type })
+  })
+  .then(() => loadAlerts());
+}
+
+function loadAlerts() {
+  fetch('../includes/get-alerts.php')
+    .then(res => res.json())
+    .then(alerts => {
+      const container = document.getElementById('alert-status');
+      container.innerHTML = '';
+
+      alerts.forEach(alert => {
+        if (alert.status) {
+          const alertBox = document.createElement('div');
+          alertBox.className = alert.type === 'signal100'
+            ? 'bg-red-600 text-white px-4 py-2 rounded'
+            : 'bg-yellow-400 text-black px-4 py-2 rounded';
+          alertBox.textContent = `🚨 ${alert.type.toUpperCase()} is ACTIVE`;
+          container.appendChild(alertBox);
+        }
+      });
+
+      if (container.innerHTML === '') {
+        container.innerHTML = '<div class="text-gray-400">No active alerts.</div>';
+      }
+    });
+}
+
+document.getElementById('toggle-signal100').addEventListener('click', () => toggleAlert('signal100'));
+document.getElementById('toggle-10-3').addEventListener('click', () => toggleAlert('10-3'));
+
+loadAlerts();
+setInterval(loadAlerts, 5000);
+
 
 
 </script>
