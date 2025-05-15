@@ -117,7 +117,7 @@ foreach ($active_units as $unit) {
                       class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm">
                       View
                     </button>
-                    
+
                     <!-- Edit -->
                     <button
                       type="button"
@@ -125,7 +125,7 @@ foreach ($active_units as $unit) {
                       class="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded text-sm">
                       Edit
                     </button>
-                    
+
                     <!-- Delete -->
                     <button
                       type="button"
@@ -224,10 +224,6 @@ foreach ($active_units as $unit) {
         <p id="view-last-seen" class="text-lg"></p>
       </div>
       <div>
-        <h3 class="text-sm text-gray-400 uppercase">Created By</h3>
-        <p id="view-created-by" class="text-lg"></p>
-      </div>
-      <div>
         <h3 class="text-sm text-gray-400 uppercase">Created At</h3>
         <p id="view-created-at" class="text-lg"></p>
       </div>
@@ -251,7 +247,7 @@ foreach ($active_units as $unit) {
 
   // Edit BOLO Modal
   const editModal = document.getElementById('editBoloModal');
-  
+
   function openEditModal(bolo) {
     document.getElementById('edit-bolo-id').value = bolo.id;
     document.getElementById('edit-type').value = bolo.type;
@@ -266,24 +262,16 @@ foreach ($active_units as $unit) {
 
   // View BOLO Modal
   const viewModal = document.getElementById('viewBoloModal');
-  
+
   function viewBolo(bolo) {
     document.getElementById('view-type').textContent = bolo.type;
     document.getElementById('view-description').textContent = bolo.description;
     document.getElementById('view-last-seen').textContent = bolo.last_seen;
-    
-    // Format created by
-    const createdBy = bolo.created_by;
-    <?php foreach ($active_units as $unit): ?>
-      if (createdBy === '<?= $unit['user_id'] ?>') {
-        document.getElementById('view-created-by').textContent = '<?= htmlspecialchars($unit['callsign']) ?>';
-      }
-    <?php endforeach; ?>
-    
+
     // Format date
     const createdAt = new Date(bolo.created_at);
     document.getElementById('view-created-at').textContent = createdAt.toLocaleString();
-    
+
     viewModal.classList.remove('hidden');
   }
 
@@ -316,15 +304,15 @@ foreach ($active_units as $unit) {
   // Create BOLO Form
   document.getElementById('createBoloForm').addEventListener('submit', function(e) {
     e.preventDefault();
-    
+
     const form = e.target;
     const formData = new FormData(form);
     const params = new URLSearchParams();
-    
+
     for (const pair of formData.entries()) {
       params.append(pair[0], pair[1]);
     }
-    
+
     fetch('../includes/create-bolo.php', {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -349,15 +337,15 @@ foreach ($active_units as $unit) {
   // Edit BOLO Form
   document.getElementById('editBoloForm').addEventListener('submit', function(e) {
     e.preventDefault();
-    
+
     const form = e.target;
     const formData = new FormData(form);
     const params = new URLSearchParams();
-    
+
     for (const pair of formData.entries()) {
       params.append(pair[0], pair[1]);
     }
-    
+
     fetch('../includes/update-bolo.php', {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },

@@ -456,10 +456,6 @@ $content = $data[0]['content'] ?? '<p>No 10-Codes available.</p>';
         <p id="view-last-seen" class="text-lg"></p>
       </div>
       <div>
-        <h3 class="text-sm text-gray-400 uppercase">Created By</h3>
-        <p id="view-created-by" class="text-lg"></p>
-      </div>
-      <div>
         <h3 class="text-sm text-gray-400 uppercase">Created At</h3>
         <p id="view-created-at" class="text-lg"></p>
       </div>
@@ -478,14 +474,6 @@ $content = $data[0]['content'] ?? '<p>No 10-Codes available.</p>';
     document.getElementById('view-type').textContent = bolo.type;
     document.getElementById('view-description').textContent = bolo.description;
     document.getElementById('view-last-seen').textContent = bolo.last_seen;
-
-    // Format created by
-    const createdBy = bolo.created_by;
-    <?php foreach ($active_units as $unit): ?>
-      if (createdBy === '<?= $unit['user_id'] ?>') {
-        document.getElementById('view-created-by').textContent = '<?= htmlspecialchars($unit['callsign']) ?>';
-      }
-    <?php endforeach; ?>
 
     // Format date
     const createdAt = new Date(bolo.created_at);
