@@ -73,6 +73,8 @@ $content = $data[0]['content'] ?? '<p>No 10-Codes available.</p>';
 <audio id="alert-sound" src="/assets/sounds/alert.mp3" preload="auto"></audio>
 <!-- Notification Sound for new call assignments -->
 <audio id="notification-sound" src="/assets/sounds/notification.mp3" preload="auto"></audio>
+<!-- Call Assignment Sound -->
+<audio id="assigncall-sound" src="/assets/sounds/assigncall.mp3" preload="auto"></audio>
 
 <!-- Sidebar -->
 <aside class="w-64 bg-gray-800 p-4 flex flex-col justify-between fixed h-full">
@@ -253,11 +255,11 @@ $content = $data[0]['content'] ?? '<p>No 10-Codes available.</p>';
                 callsSection.classList.remove('bg-blue-900');
               }, 1000);
 
-              // Play notification sound
-              const notificationSound = document.getElementById('notification-sound');
-              if (notificationSound) {
-                notificationSound.currentTime = 0;
-                notificationSound.play().catch(e => console.error('Error playing notification sound:', e));
+              // Play call assignment sound
+              const assigncallSound = document.getElementById('assigncall-sound');
+              if (assigncallSound) {
+                assigncallSound.currentTime = 0;
+                assigncallSound.play().catch(e => console.error('Error playing call assignment sound:', e));
               }
             }
           }
