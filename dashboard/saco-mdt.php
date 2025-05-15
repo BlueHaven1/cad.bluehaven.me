@@ -35,6 +35,12 @@ $content = $data[0]['content'] ?? '<p>No 10-Codes available.</p>';
 [$unitRes] = supabaseRequest("unit_status", "GET");
 $active_units = json_decode($unitRes, true) ?? [];
 
+// Map user_id => unit info
+$unitMap = [];
+foreach ($active_units as $unit) {
+    $unitMap[$unit['user_id']] = $unit;
+}
+
 // Fetch calls
 [$callRes] = supabaseRequest("calls?order=created_at.desc", "GET");
 $active_calls = json_decode($callRes, true) ?? [];
@@ -129,14 +135,23 @@ $active_calls = json_decode($callRes, true) ?? [];
               <div class="text-sm text-gray-300 space-y-1">
                 <p><strong>Location:</strong> <?= htmlspecialchars($call['location']) ?><?= $call['postal'] ? ' (Postal: ' . htmlspecialchars($call['postal']) . ')' : '' ?></p>
                 <p><strong>Units:</strong>
-                  <?php
-                    $unitList = explode(',', $call['units'] ?? '');
-                    if (empty($unitList[0])) {
-                      echo '<span class="text-gray-400">None</span>';
-                    } else {
-                      echo implode(', ', array_map('htmlspecialchars', $unitList));
-                    }
-                  ?>
+<?php
+  $unitList = explode(',', $call['units'] ?? '');
+  if (empty($unitList[0])) {
+    echo '<span class="text-gray-400">None</span>';
+  } else {
+    $displayUnits = [];
+    foreach ($unitList as $uid) {
+      $uid = trim($uid);
+      if (isset($unitMap[$uid])) {
+        $displayUnits[] = htmlspecialchars($unitMap[$uid]['callsign'] . ' - ' . $unitMap[$uid]['username']);
+      } else {
+        $displayUnits[] = htmlspecialchars($uid); // fallback if unit not found
+      }
+    }
+    echo implode(', ', $displayUnits);
+  }
+?>
                 </p>
               </div>
             </div>
