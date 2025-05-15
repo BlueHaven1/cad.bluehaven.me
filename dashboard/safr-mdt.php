@@ -155,12 +155,7 @@ $content = $data[0]['content'] ?? '<p>No 10-Codes available.</p>';
 
     <!-- Assigned Calls -->
     <div class="bg-gray-800 rounded-2xl p-6 shadow-xl border border-gray-700 mt-12 calls-section transition-colors duration-300">
-      <div class="flex justify-between items-center mb-6">
-        <h2 class="text-2xl font-semibold">Your Assigned Calls</h2>
-        <button id="test-sound-btn" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded text-sm">
-          Test Call Sound
-        </button>
-      </div>
+      <h2 class="text-2xl font-semibold mb-6">Your Assigned Calls</h2>
 
       <div class="assigned-calls-container">
         <?php if (!empty($assigned_calls)): ?>
@@ -381,7 +376,7 @@ $content = $data[0]['content'] ?? '<p>No 10-Codes available.</p>';
     });
   }
 
-  // Add event listener for test sound button and preload sounds
+  // Preload sound file when the page loads
   document.addEventListener('DOMContentLoaded', () => {
     // Preload the sound file
     const assigncallSound = document.getElementById('assigncall-sound');
@@ -390,24 +385,6 @@ $content = $data[0]['content'] ?? '<p>No 10-Codes available.</p>';
       preloadSound(assigncallSound)
         .then(() => console.log('Sound preloaded and ready to play'))
         .catch(e => console.error('Error preloading sound:', e));
-    }
-
-    // Set up test button
-    const testSoundBtn = document.getElementById('test-sound-btn');
-    if (testSoundBtn) {
-      testSoundBtn.addEventListener('click', () => {
-        console.log('Test sound button clicked');
-        if (assigncallSound) {
-          console.log('Sound element found, attempting to play...');
-          assigncallSound.currentTime = 0;
-          assigncallSound.volume = 1.0;
-          assigncallSound.play()
-            .then(() => console.log('Sound played successfully!'))
-            .catch(e => console.error('Error playing call assignment sound:', e));
-        } else {
-          console.error('Sound element not found!');
-        }
-      });
     }
   });
 </script>
