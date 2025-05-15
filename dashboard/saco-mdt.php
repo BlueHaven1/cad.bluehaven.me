@@ -112,6 +112,11 @@ $active_calls = json_decode($callRes, true) ?? [];
   </button>
 </div>
 
+<!-- Active Alerts Display -->
+<div id="alert-status" class="mt-4 space-y-2 text-lg font-medium"></div>
+        </div>
+      </div>
+    </div>
 
     <!-- Active Units -->
     <div class="bg-gray-800 rounded-2xl p-6 shadow-xl border border-gray-700 mt-12">
@@ -451,6 +456,7 @@ function loadAlerts() {
       spacer.className = 'h-14'; // reserve space for banner
     });
 }
+
 
 
 
